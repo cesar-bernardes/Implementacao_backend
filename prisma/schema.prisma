@@ -1,0 +1,278 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["implementacao"]
+}
+
+enum GlobalRole {
+  GLOBAL_ADMIN
+  GLOBAL_RESTRICTED
+  USER
+
+  @@schema("implementacao")
+}
+
+enum OrganizationRole {
+  OWNER
+  SUPERVISOR
+  IMPLEMENTATION_RESPONSIBLE
+  VISITOR
+
+  @@schema("implementacao")
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+
+  @@schema("implementacao")
+}
+
+enum TemplateVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+
+  @@schema("implementacao")
+}
+
+enum ImplementationStatus {
+  PLANNED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELED
+
+  @@schema("implementacao")
+}
+
+enum CalendarEventType {
+  KICKOFF
+  FOLLOW_UP
+  TRAINING
+  SUPPORT
+  INTERNAL
+
+  @@schema("implementacao")
+}
+
+enum CalendarEventStatus {
+  SCHEDULED
+  CANCELED
+  COMPLETED
+
+  @@schema("implementacao")
+}
+
+enum CalendarProvider {
+  INTERNAL
+  GOOGLE
+
+  @@schema("implementacao")
+}
+
+model User {
+  id              String           @id @default(uuid()) @db.Uuid
+  authProviderId  String           @unique @map("auth_provider_id")
+  email           String           @unique
+  name            String
+  globalRole      GlobalRole       @default(USER) @map("global_role")
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  memberships     Membership[]
+  sessions        Session[]
+  auditEvents     AuditLog[]       @relation("AuditActor")
+  implementations Implementation[] @relation("ImplementationOwner")
+  calendarEvents  CalendarEvent[]  @relation("CalendarEventOwner")
+  availability   CalendarAvailability[]
+
+  @@map("users")
+  @@schema("implementacao")
+}
+
+model Organization {
+  id              String           @id @default(uuid()) @db.Uuid
+  legalName       String           @map("legal_name")
+  tradeName       String           @map("trade_name")
+  document        String?          @unique
+  active          Boolean          @default(true)
+  isPlatformOwner Boolean          @default(false) @map("is_platform_owner")
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  memberships     Membership[]
+  implementations Implementation[]
+  auditLogs       AuditLog[]
+  calendarEvents  CalendarEvent[]
+
+  @@map("organizations")
+  @@schema("implementacao")
+}
+
+model Membership {
+  id             String           @id @default(uuid()) @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  organizationId String           @map("organization_id") @db.Uuid
+  role           OrganizationRole
+  status         MembershipStatus @default(INVITED)
+  permissions    Json?
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId, status])
+  @@map("memberships")
+  @@schema("implementacao")
+}
+
+model Product {
+  id        String                   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String                   @unique
+  active    Boolean                  @default(true)
+  createdAt DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+  templates ImplementationTemplate[]
+
+  @@map("products")
+  @@schema("implementacao")
+}
+
+model ImplementationTemplate {
+  id        String                          @id @default(uuid()) @db.Uuid
+  productId String                          @map("product_id") @db.Uuid
+  name      String
+  createdAt DateTime                        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime                        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  product   Product                         @relation(fields: [productId], references: [id])
+  versions  ImplementationTemplateVersion[]
+
+  @@map("implementation_templates")
+  @@schema("implementacao")
+}
+
+model ImplementationTemplateVersion {
+  id              String                 @id @default(uuid()) @db.Uuid
+  templateId      String                 @map("template_id") @db.Uuid
+  version         Int
+  status          TemplateVersionStatus  @default(DRAFT)
+  definition      Json
+  publishedAt     DateTime?              @map("published_at") @db.Timestamptz(6)
+  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  template        ImplementationTemplate @relation(fields: [templateId], references: [id])
+  implementations Implementation[]
+
+  @@unique([templateId, version])
+  @@map("implementation_template_versions")
+  @@schema("implementacao")
+}
+
+model Implementation {
+  id                String                        @id @default(uuid()) @db.Uuid
+  organizationId    String                        @map("organization_id") @db.Uuid
+  templateVersionId String                        @map("template_version_id") @db.Uuid
+  ownerId           String?                       @map("owner_id") @db.Uuid
+  name              String
+  status            ImplementationStatus          @default(PLANNED)
+  startedAt         DateTime?                     @map("started_at") @db.Date
+  dueAt             DateTime?                     @map("due_at") @db.Date
+  createdAt         DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  organization      Organization                  @relation(fields: [organizationId], references: [id])
+  templateVersion   ImplementationTemplateVersion @relation(fields: [templateVersionId], references: [id])
+  owner             User?                         @relation("ImplementationOwner", fields: [ownerId], references: [id])
+  calendarEvents    CalendarEvent[]
+
+  @@index([organizationId, status])
+  @@map("implementations")
+  @@schema("implementacao")
+}
+
+model CalendarEvent {
+  id                   String              @id @default(uuid()) @db.Uuid
+  organizationId       String?             @map("organization_id") @db.Uuid
+  implementationId     String?             @map("implementation_id") @db.Uuid
+  ownerId               String              @map("owner_id") @db.Uuid
+  title                 String
+  description           String?
+  type                  CalendarEventType
+  status                CalendarEventStatus @default(SCHEDULED)
+  startsAt              DateTime            @map("starts_at") @db.Timestamptz(6)
+  endsAt                DateTime            @map("ends_at") @db.Timestamptz(6)
+  timezone              String              @default("America/Cuiaba")
+  clientCanSeeDetails   Boolean             @default(false) @map("client_can_see_details")
+  provider              CalendarProvider    @default(INTERNAL)
+  externalEventId       String?             @map("external_event_id")
+  externalCalendarId    String?             @map("external_calendar_id")
+  lastSyncedAt          DateTime?           @map("last_synced_at") @db.Timestamptz(6)
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  organization         Organization?       @relation(fields: [organizationId], references: [id])
+  implementation       Implementation?     @relation(fields: [implementationId], references: [id])
+  owner                 User                @relation("CalendarEventOwner", fields: [ownerId], references: [id])
+
+  @@index([ownerId, startsAt, endsAt])
+  @@index([organizationId, startsAt])
+  @@unique([provider, externalEventId])
+  @@map("calendar_events")
+  @@schema("implementacao")
+}
+
+model CalendarAvailability {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  weekday     Int
+  startMinute Int      @map("start_minute")
+  endMinute   Int      @map("end_minute")
+  timezone    String   @default("America/Cuiaba")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, weekday, active])
+  @@map("calendar_availability")
+  @@schema("implementacao")
+}
+
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  refreshTokenHash String    @map("refresh_token_hash")
+  userAgent        String?   @map("user_agent")
+  ipAddress        String?   @map("ip_address") @db.Inet
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@map("sessions")
+  @@schema("implementacao")
+}
+
+model AuditLog {
+  id             BigInt        @id @default(autoincrement())
+  organizationId String?       @map("organization_id") @db.Uuid
+  actorId        String?       @map("actor_id") @db.Uuid
+  action         String
+  entityType     String        @map("entity_type")
+  entityId       String?       @map("entity_id")
+  metadata       Json?
+  ipAddress      String?       @map("ip_address") @db.Inet
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  actor          User?         @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+  @@schema("implementacao")
+}
