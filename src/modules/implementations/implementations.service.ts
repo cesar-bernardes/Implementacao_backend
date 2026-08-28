@@ -12,7 +12,7 @@ type CreateImplementationInput = {
   dueAt?: string;
 };
 type SaveAnswerInput = { checklistValue?: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_DONE'; numberValue?: number; textValue?: string; notes?: string };
-type TemplateDefinition = { phases?: Array<{ code: string; name: string; order: number; isBase?: boolean; durationWeeks?: number; meetingsPerWeek?: number; questions: Array<{ code: string; text: string; type: string; required: boolean; config?: Record<string, unknown> }> }> };
+export type TemplateDefinition = { phases?: Array<{ code: string; name: string; order: number; isBase?: boolean; durationWeeks?: number; meetingsPerWeek?: number; questions: Array<{ code: string; text: string; type: string; required: boolean; config?: Record<string, unknown> }> }> };
 type PhaseRow = { id: string; code: string; name: string; sortOrder: number; startedAt: Date | null; completedAt: Date | null };
 type QuestionRow = { id: string; phaseId: string; code: string; prompt: string; responseType: 'CHECKLIST' | 'NUMBER' | 'SHORT_TEXT'; required: boolean; responseConfig: unknown; sortOrder: number; checklistValue: string | null; numberValue: string | null; textValue: string | null; notes: string | null; answeredAt: Date | null; answeredByName: string | null };
 
@@ -104,7 +104,7 @@ export class ImplementationsService {
     }, 0);
     const startedAt = input.startedAt ? new Date(`${input.startedAt}T00:00:00.000Z`) : null;
     const dueAt = startedAt ? new Date(startedAt.getTime() + estimatedWeeks * 7 * 24 * 60 * 60 * 1000) : null;
-    await this.ensureVersionStructure(templateVersion.id, definition);
+    await this.synchronizeVersionStructure(templateVersion.id, definition);
 
     const implementation = await this.prisma.implementation.create({
       data: {
@@ -128,7 +128,7 @@ export class ImplementationsService {
 
   async getFor(id: string, actor: Actor) {
     const implementation = await this.authorizedImplementation(id, actor);
-    await this.ensureVersionStructure(implementation.templateVersionId, implementation.templateVersion.definition as TemplateDefinition);
+    await this.synchronizeVersionStructure(implementation.templateVersionId, implementation.templateVersion.definition as TemplateDefinition);
     await this.prisma.$executeRaw`select implementacao.sync_implementation_snapshot(${id}::uuid)`;
     const selectedPhaseCodes = this.selectedCodes(implementation.selectedPhaseCodes, implementation.templateVersion.definition as TemplateDefinition);
     const progressState = await this.synchronizeProgressState(id, implementation.status, selectedPhaseCodes);
@@ -279,7 +279,7 @@ export class ImplementationsService {
     return implementation;
   }
 
-  private async ensureVersionStructure(versionId: string, definition: TemplateDefinition) {
+  async synchronizeVersionStructure(versionId: string, definition: TemplateDefinition) {
     for (const phase of definition.phases ?? []) {
       const [phaseRow] = await this.prisma.$queryRaw<Array<{ id: string }>>`
         insert into implementacao.template_phases (template_version_id, code, name, sort_order)

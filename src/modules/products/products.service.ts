@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
+import { ImplementationsService, TemplateDefinition } from '../implementations/implementations.service';
 
 type ProductQuestion = {
   code: string;
@@ -23,7 +24,10 @@ type ProductDefinition = { phases: ProductPhase[] };
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly implementations: ImplementationsService,
+  ) {}
 
   async configuration() {
     return this.prisma.product.findMany({
@@ -86,10 +90,19 @@ export class ProductsService {
       };
     });
 
+    const normalizedDefinition = { phases: normalized };
     await this.prisma.implementationTemplateVersion.update({
       where: { id: versionId },
-      data: { definition: { phases: normalized } },
+      data: { definition: normalizedDefinition },
     });
-    return { id: versionId, definition: { phases: normalized } };
+    await this.implementations.synchronizeVersionStructure(versionId, normalizedDefinition as TemplateDefinition);
+    const implementations = await this.prisma.implementation.findMany({
+      where: { templateVersionId: versionId },
+      select: { id: true },
+    });
+    await Promise.all(implementations.map((implementation) =>
+      this.prisma.$executeRaw`select implementacao.sync_implementation_snapshot(${implementation.id}::uuid)`,
+    ));
+    return { id: versionId, definition: normalizedDefinition, synchronizedImplementations: implementations.length };
   }
 }
