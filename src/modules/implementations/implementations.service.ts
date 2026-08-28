@@ -280,6 +280,25 @@ export class ImplementationsService {
   }
 
   async synchronizeVersionStructure(versionId: string, definition: TemplateDefinition) {
+    const desiredQuestionCodes = new Set((definition.phases ?? []).flatMap((phase) => phase.questions.map((question) => question.code)));
+    const existingQuestions = await this.prisma.$queryRaw<Array<{ id: string; code: string }>>`
+      select id, code from implementacao.template_questions where template_version_id = ${versionId}::uuid
+    `;
+    for (const question of existingQuestions) {
+      if (desiredQuestionCodes.has(question.code)) continue;
+      await this.prisma.$executeRaw`
+        update implementacao.implementation_questions iq
+           set active = false, updated_at = now()
+         where iq.code = ${question.code}
+           and exists (
+             select 1 from implementacao.implementations i
+              where i.id = iq.implementation_id and i.template_version_id = ${versionId}::uuid
+           )
+      `;
+      await this.prisma.$executeRaw`
+        delete from implementacao.template_questions where id = ${question.id}::uuid
+      `;
+    }
     for (const phase of definition.phases ?? []) {
       const [phaseRow] = await this.prisma.$queryRaw<Array<{ id: string }>>`
         insert into implementacao.template_phases (template_version_id, code, name, sort_order)
