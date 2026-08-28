@@ -20,8 +20,20 @@ export type ImplementationModel = runtime.Types.Result.DefaultSelection<Prisma.$
 
 export type AggregateImplementation = {
   _count: ImplementationCountAggregateOutputType | null
+  _avg: ImplementationAvgAggregateOutputType | null
+  _sum: ImplementationSumAggregateOutputType | null
   _min: ImplementationMinAggregateOutputType | null
   _max: ImplementationMaxAggregateOutputType | null
+}
+
+export type ImplementationAvgAggregateOutputType = {
+  estimatedWeeks: number | null
+  plannedMeetings: number | null
+}
+
+export type ImplementationSumAggregateOutputType = {
+  estimatedWeeks: number | null
+  plannedMeetings: number | null
 }
 
 export type ImplementationMinAggregateOutputType = {
@@ -31,6 +43,9 @@ export type ImplementationMinAggregateOutputType = {
   ownerId: string | null
   name: string | null
   status: $Enums.ImplementationStatus | null
+  currentPhaseCode: string | null
+  estimatedWeeks: number | null
+  plannedMeetings: number | null
   startedAt: Date | null
   dueAt: Date | null
   createdAt: Date | null
@@ -44,6 +59,9 @@ export type ImplementationMaxAggregateOutputType = {
   ownerId: string | null
   name: string | null
   status: $Enums.ImplementationStatus | null
+  currentPhaseCode: string | null
+  estimatedWeeks: number | null
+  plannedMeetings: number | null
   startedAt: Date | null
   dueAt: Date | null
   createdAt: Date | null
@@ -57,6 +75,10 @@ export type ImplementationCountAggregateOutputType = {
   ownerId: number
   name: number
   status: number
+  currentPhaseCode: number
+  selectedPhaseCodes: number
+  estimatedWeeks: number
+  plannedMeetings: number
   startedAt: number
   dueAt: number
   createdAt: number
@@ -65,6 +87,16 @@ export type ImplementationCountAggregateOutputType = {
 }
 
 
+export type ImplementationAvgAggregateInputType = {
+  estimatedWeeks?: true
+  plannedMeetings?: true
+}
+
+export type ImplementationSumAggregateInputType = {
+  estimatedWeeks?: true
+  plannedMeetings?: true
+}
+
 export type ImplementationMinAggregateInputType = {
   id?: true
   organizationId?: true
@@ -72,6 +104,9 @@ export type ImplementationMinAggregateInputType = {
   ownerId?: true
   name?: true
   status?: true
+  currentPhaseCode?: true
+  estimatedWeeks?: true
+  plannedMeetings?: true
   startedAt?: true
   dueAt?: true
   createdAt?: true
@@ -85,6 +120,9 @@ export type ImplementationMaxAggregateInputType = {
   ownerId?: true
   name?: true
   status?: true
+  currentPhaseCode?: true
+  estimatedWeeks?: true
+  plannedMeetings?: true
   startedAt?: true
   dueAt?: true
   createdAt?: true
@@ -98,6 +136,10 @@ export type ImplementationCountAggregateInputType = {
   ownerId?: true
   name?: true
   status?: true
+  currentPhaseCode?: true
+  selectedPhaseCodes?: true
+  estimatedWeeks?: true
+  plannedMeetings?: true
   startedAt?: true
   dueAt?: true
   createdAt?: true
@@ -143,6 +185,18 @@ export type ImplementationAggregateArgs<ExtArgs extends runtime.Types.Extensions
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ImplementationAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ImplementationSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ImplementationMinAggregateInputType
@@ -173,6 +227,8 @@ export type ImplementationGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   _count?: ImplementationCountAggregateInputType | true
+  _avg?: ImplementationAvgAggregateInputType
+  _sum?: ImplementationSumAggregateInputType
   _min?: ImplementationMinAggregateInputType
   _max?: ImplementationMaxAggregateInputType
 }
@@ -184,11 +240,17 @@ export type ImplementationGroupByOutputType = {
   ownerId: string | null
   name: string
   status: $Enums.ImplementationStatus
+  currentPhaseCode: string | null
+  selectedPhaseCodes: runtime.JsonValue | null
+  estimatedWeeks: number
+  plannedMeetings: number
   startedAt: Date | null
   dueAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: ImplementationCountAggregateOutputType | null
+  _avg: ImplementationAvgAggregateOutputType | null
+  _sum: ImplementationSumAggregateOutputType | null
   _min: ImplementationMinAggregateOutputType | null
   _max: ImplementationMaxAggregateOutputType | null
 }
@@ -218,6 +280,10 @@ export type ImplementationWhereInput = {
   ownerId?: Prisma.UuidNullableFilter<"Implementation"> | string | null
   name?: Prisma.StringFilter<"Implementation"> | string
   status?: Prisma.EnumImplementationStatusFilter<"Implementation"> | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.StringNullableFilter<"Implementation"> | string | null
+  selectedPhaseCodes?: Prisma.JsonNullableFilter<"Implementation">
+  estimatedWeeks?: Prisma.IntFilter<"Implementation"> | number
+  plannedMeetings?: Prisma.IntFilter<"Implementation"> | number
   startedAt?: Prisma.DateTimeNullableFilter<"Implementation"> | Date | string | null
   dueAt?: Prisma.DateTimeNullableFilter<"Implementation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Implementation"> | Date | string
@@ -235,6 +301,10 @@ export type ImplementationOrderByWithRelationInput = {
   ownerId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentPhaseCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  selectedPhaseCodes?: Prisma.SortOrderInput | Prisma.SortOrder
+  estimatedWeeks?: Prisma.SortOrder
+  plannedMeetings?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   dueAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -255,6 +325,10 @@ export type ImplementationWhereUniqueInput = Prisma.AtLeast<{
   ownerId?: Prisma.UuidNullableFilter<"Implementation"> | string | null
   name?: Prisma.StringFilter<"Implementation"> | string
   status?: Prisma.EnumImplementationStatusFilter<"Implementation"> | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.StringNullableFilter<"Implementation"> | string | null
+  selectedPhaseCodes?: Prisma.JsonNullableFilter<"Implementation">
+  estimatedWeeks?: Prisma.IntFilter<"Implementation"> | number
+  plannedMeetings?: Prisma.IntFilter<"Implementation"> | number
   startedAt?: Prisma.DateTimeNullableFilter<"Implementation"> | Date | string | null
   dueAt?: Prisma.DateTimeNullableFilter<"Implementation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Implementation"> | Date | string
@@ -272,13 +346,19 @@ export type ImplementationOrderByWithAggregationInput = {
   ownerId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentPhaseCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  selectedPhaseCodes?: Prisma.SortOrderInput | Prisma.SortOrder
+  estimatedWeeks?: Prisma.SortOrder
+  plannedMeetings?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   dueAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ImplementationCountOrderByAggregateInput
+  _avg?: Prisma.ImplementationAvgOrderByAggregateInput
   _max?: Prisma.ImplementationMaxOrderByAggregateInput
   _min?: Prisma.ImplementationMinOrderByAggregateInput
+  _sum?: Prisma.ImplementationSumOrderByAggregateInput
 }
 
 export type ImplementationScalarWhereWithAggregatesInput = {
@@ -291,6 +371,10 @@ export type ImplementationScalarWhereWithAggregatesInput = {
   ownerId?: Prisma.UuidNullableWithAggregatesFilter<"Implementation"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"Implementation"> | string
   status?: Prisma.EnumImplementationStatusWithAggregatesFilter<"Implementation"> | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.StringNullableWithAggregatesFilter<"Implementation"> | string | null
+  selectedPhaseCodes?: Prisma.JsonNullableWithAggregatesFilter<"Implementation">
+  estimatedWeeks?: Prisma.IntWithAggregatesFilter<"Implementation"> | number
+  plannedMeetings?: Prisma.IntWithAggregatesFilter<"Implementation"> | number
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Implementation"> | Date | string | null
   dueAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Implementation"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Implementation"> | Date | string
@@ -301,6 +385,10 @@ export type ImplementationCreateInput = {
   id?: string
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -318,6 +406,10 @@ export type ImplementationUncheckedCreateInput = {
   ownerId?: string | null
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -329,6 +421,10 @@ export type ImplementationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -346,6 +442,10 @@ export type ImplementationUncheckedUpdateInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -360,6 +460,10 @@ export type ImplementationCreateManyInput = {
   ownerId?: string | null
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -370,6 +474,10 @@ export type ImplementationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -383,6 +491,10 @@ export type ImplementationUncheckedUpdateManyInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -406,10 +518,19 @@ export type ImplementationCountOrderByAggregateInput = {
   ownerId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentPhaseCode?: Prisma.SortOrder
+  selectedPhaseCodes?: Prisma.SortOrder
+  estimatedWeeks?: Prisma.SortOrder
+  plannedMeetings?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   dueAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ImplementationAvgOrderByAggregateInput = {
+  estimatedWeeks?: Prisma.SortOrder
+  plannedMeetings?: Prisma.SortOrder
 }
 
 export type ImplementationMaxOrderByAggregateInput = {
@@ -419,6 +540,9 @@ export type ImplementationMaxOrderByAggregateInput = {
   ownerId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentPhaseCode?: Prisma.SortOrder
+  estimatedWeeks?: Prisma.SortOrder
+  plannedMeetings?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   dueAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -432,10 +556,18 @@ export type ImplementationMinOrderByAggregateInput = {
   ownerId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentPhaseCode?: Prisma.SortOrder
+  estimatedWeeks?: Prisma.SortOrder
+  plannedMeetings?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   dueAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ImplementationSumOrderByAggregateInput = {
+  estimatedWeeks?: Prisma.SortOrder
+  plannedMeetings?: Prisma.SortOrder
 }
 
 export type ImplementationNullableScalarRelationFilter = {
@@ -593,6 +725,10 @@ export type ImplementationCreateWithoutOwnerInput = {
   id?: string
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -608,6 +744,10 @@ export type ImplementationUncheckedCreateWithoutOwnerInput = {
   templateVersionId: string
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -651,6 +791,10 @@ export type ImplementationScalarWhereInput = {
   ownerId?: Prisma.UuidNullableFilter<"Implementation"> | string | null
   name?: Prisma.StringFilter<"Implementation"> | string
   status?: Prisma.EnumImplementationStatusFilter<"Implementation"> | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.StringNullableFilter<"Implementation"> | string | null
+  selectedPhaseCodes?: Prisma.JsonNullableFilter<"Implementation">
+  estimatedWeeks?: Prisma.IntFilter<"Implementation"> | number
+  plannedMeetings?: Prisma.IntFilter<"Implementation"> | number
   startedAt?: Prisma.DateTimeNullableFilter<"Implementation"> | Date | string | null
   dueAt?: Prisma.DateTimeNullableFilter<"Implementation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Implementation"> | Date | string
@@ -661,6 +805,10 @@ export type ImplementationCreateWithoutOrganizationInput = {
   id?: string
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -676,6 +824,10 @@ export type ImplementationUncheckedCreateWithoutOrganizationInput = {
   ownerId?: string | null
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -713,6 +865,10 @@ export type ImplementationCreateWithoutTemplateVersionInput = {
   id?: string
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -728,6 +884,10 @@ export type ImplementationUncheckedCreateWithoutTemplateVersionInput = {
   ownerId?: string | null
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -765,6 +925,10 @@ export type ImplementationCreateWithoutCalendarEventsInput = {
   id?: string
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -781,6 +945,10 @@ export type ImplementationUncheckedCreateWithoutCalendarEventsInput = {
   ownerId?: string | null
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -807,6 +975,10 @@ export type ImplementationUpdateWithoutCalendarEventsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -823,6 +995,10 @@ export type ImplementationUncheckedUpdateWithoutCalendarEventsInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -835,6 +1011,10 @@ export type ImplementationCreateManyOwnerInput = {
   templateVersionId: string
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -845,6 +1025,10 @@ export type ImplementationUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -860,6 +1044,10 @@ export type ImplementationUncheckedUpdateWithoutOwnerInput = {
   templateVersionId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -873,6 +1061,10 @@ export type ImplementationUncheckedUpdateManyWithoutOwnerInput = {
   templateVersionId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -885,6 +1077,10 @@ export type ImplementationCreateManyOrganizationInput = {
   ownerId?: string | null
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -895,6 +1091,10 @@ export type ImplementationUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -910,6 +1110,10 @@ export type ImplementationUncheckedUpdateWithoutOrganizationInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -923,6 +1127,10 @@ export type ImplementationUncheckedUpdateManyWithoutOrganizationInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -935,6 +1143,10 @@ export type ImplementationCreateManyTemplateVersionInput = {
   ownerId?: string | null
   name: string
   status?: $Enums.ImplementationStatus
+  currentPhaseCode?: string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: number
+  plannedMeetings?: number
   startedAt?: Date | string | null
   dueAt?: Date | string | null
   createdAt?: Date | string
@@ -945,6 +1157,10 @@ export type ImplementationUpdateWithoutTemplateVersionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -960,6 +1176,10 @@ export type ImplementationUncheckedUpdateWithoutTemplateVersionInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -973,6 +1193,10 @@ export type ImplementationUncheckedUpdateManyWithoutTemplateVersionInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumImplementationStatusFieldUpdateOperationsInput | $Enums.ImplementationStatus
+  currentPhaseCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPhaseCodes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  estimatedWeeks?: Prisma.IntFieldUpdateOperationsInput | number
+  plannedMeetings?: Prisma.IntFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1017,6 +1241,10 @@ export type ImplementationSelect<ExtArgs extends runtime.Types.Extensions.Intern
   ownerId?: boolean
   name?: boolean
   status?: boolean
+  currentPhaseCode?: boolean
+  selectedPhaseCodes?: boolean
+  estimatedWeeks?: boolean
+  plannedMeetings?: boolean
   startedAt?: boolean
   dueAt?: boolean
   createdAt?: boolean
@@ -1035,6 +1263,10 @@ export type ImplementationSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   ownerId?: boolean
   name?: boolean
   status?: boolean
+  currentPhaseCode?: boolean
+  selectedPhaseCodes?: boolean
+  estimatedWeeks?: boolean
+  plannedMeetings?: boolean
   startedAt?: boolean
   dueAt?: boolean
   createdAt?: boolean
@@ -1051,6 +1283,10 @@ export type ImplementationSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   ownerId?: boolean
   name?: boolean
   status?: boolean
+  currentPhaseCode?: boolean
+  selectedPhaseCodes?: boolean
+  estimatedWeeks?: boolean
+  plannedMeetings?: boolean
   startedAt?: boolean
   dueAt?: boolean
   createdAt?: boolean
@@ -1067,13 +1303,17 @@ export type ImplementationSelectScalar = {
   ownerId?: boolean
   name?: boolean
   status?: boolean
+  currentPhaseCode?: boolean
+  selectedPhaseCodes?: boolean
+  estimatedWeeks?: boolean
+  plannedMeetings?: boolean
   startedAt?: boolean
   dueAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ImplementationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "templateVersionId" | "ownerId" | "name" | "status" | "startedAt" | "dueAt" | "createdAt" | "updatedAt", ExtArgs["result"]["implementation"]>
+export type ImplementationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "templateVersionId" | "ownerId" | "name" | "status" | "currentPhaseCode" | "selectedPhaseCodes" | "estimatedWeeks" | "plannedMeetings" | "startedAt" | "dueAt" | "createdAt" | "updatedAt", ExtArgs["result"]["implementation"]>
 export type ImplementationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   templateVersion?: boolean | Prisma.ImplementationTemplateVersionDefaultArgs<ExtArgs>
@@ -1107,6 +1347,10 @@ export type $ImplementationPayload<ExtArgs extends runtime.Types.Extensions.Inte
     ownerId: string | null
     name: string
     status: $Enums.ImplementationStatus
+    currentPhaseCode: string | null
+    selectedPhaseCodes: runtime.JsonValue | null
+    estimatedWeeks: number
+    plannedMeetings: number
     startedAt: Date | null
     dueAt: Date | null
     createdAt: Date
@@ -1544,6 +1788,10 @@ export interface ImplementationFieldRefs {
   readonly ownerId: Prisma.FieldRef<"Implementation", 'String'>
   readonly name: Prisma.FieldRef<"Implementation", 'String'>
   readonly status: Prisma.FieldRef<"Implementation", 'ImplementationStatus'>
+  readonly currentPhaseCode: Prisma.FieldRef<"Implementation", 'String'>
+  readonly selectedPhaseCodes: Prisma.FieldRef<"Implementation", 'Json'>
+  readonly estimatedWeeks: Prisma.FieldRef<"Implementation", 'Int'>
+  readonly plannedMeetings: Prisma.FieldRef<"Implementation", 'Int'>
   readonly startedAt: Prisma.FieldRef<"Implementation", 'DateTime'>
   readonly dueAt: Prisma.FieldRef<"Implementation", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Implementation", 'DateTime'>

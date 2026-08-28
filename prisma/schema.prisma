@@ -101,6 +101,11 @@ model Organization {
   legalName       String           @map("legal_name")
   tradeName       String           @map("trade_name")
   document        String?          @unique
+  segment         String?
+  contactEmail    String?          @map("contact_email")
+  phone           String?
+  city            String?
+  state           String?          @db.Char(2)
   active          Boolean          @default(true)
   isPlatformOwner Boolean          @default(false) @map("is_platform_owner")
   createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -179,8 +184,12 @@ model Implementation {
   organizationId    String                        @map("organization_id") @db.Uuid
   templateVersionId String                        @map("template_version_id") @db.Uuid
   ownerId           String?                       @map("owner_id") @db.Uuid
-  name              String
+  name              String                        
   status            ImplementationStatus          @default(PLANNED)
+  currentPhaseCode  String?                       @map("current_phase_code")
+  selectedPhaseCodes Json?                        @map("selected_phase_codes")
+  estimatedWeeks    Int                           @default(0) @map("estimated_weeks")
+  plannedMeetings   Int                           @default(0) @map("planned_meetings")
   startedAt         DateTime?                     @map("started_at") @db.Date
   dueAt             DateTime?                     @map("due_at") @db.Date
   createdAt         DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)

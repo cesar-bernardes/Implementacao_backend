@@ -29,6 +29,11 @@ export type OrganizationMinAggregateOutputType = {
   legalName: string | null
   tradeName: string | null
   document: string | null
+  segment: string | null
+  contactEmail: string | null
+  phone: string | null
+  city: string | null
+  state: string | null
   active: boolean | null
   isPlatformOwner: boolean | null
   createdAt: Date | null
@@ -40,6 +45,11 @@ export type OrganizationMaxAggregateOutputType = {
   legalName: string | null
   tradeName: string | null
   document: string | null
+  segment: string | null
+  contactEmail: string | null
+  phone: string | null
+  city: string | null
+  state: string | null
   active: boolean | null
   isPlatformOwner: boolean | null
   createdAt: Date | null
@@ -51,6 +61,11 @@ export type OrganizationCountAggregateOutputType = {
   legalName: number
   tradeName: number
   document: number
+  segment: number
+  contactEmail: number
+  phone: number
+  city: number
+  state: number
   active: number
   isPlatformOwner: number
   createdAt: number
@@ -64,6 +79,11 @@ export type OrganizationMinAggregateInputType = {
   legalName?: true
   tradeName?: true
   document?: true
+  segment?: true
+  contactEmail?: true
+  phone?: true
+  city?: true
+  state?: true
   active?: true
   isPlatformOwner?: true
   createdAt?: true
@@ -75,6 +95,11 @@ export type OrganizationMaxAggregateInputType = {
   legalName?: true
   tradeName?: true
   document?: true
+  segment?: true
+  contactEmail?: true
+  phone?: true
+  city?: true
+  state?: true
   active?: true
   isPlatformOwner?: true
   createdAt?: true
@@ -86,6 +111,11 @@ export type OrganizationCountAggregateInputType = {
   legalName?: true
   tradeName?: true
   document?: true
+  segment?: true
+  contactEmail?: true
+  phone?: true
+  city?: true
+  state?: true
   active?: true
   isPlatformOwner?: true
   createdAt?: true
@@ -170,6 +200,11 @@ export type OrganizationGroupByOutputType = {
   legalName: string
   tradeName: string
   document: string | null
+  segment: string | null
+  contactEmail: string | null
+  phone: string | null
+  city: string | null
+  state: string | null
   active: boolean
   isPlatformOwner: boolean
   createdAt: Date
@@ -202,6 +237,11 @@ export type OrganizationWhereInput = {
   legalName?: Prisma.StringFilter<"Organization"> | string
   tradeName?: Prisma.StringFilter<"Organization"> | string
   document?: Prisma.StringNullableFilter<"Organization"> | string | null
+  segment?: Prisma.StringNullableFilter<"Organization"> | string | null
+  contactEmail?: Prisma.StringNullableFilter<"Organization"> | string | null
+  phone?: Prisma.StringNullableFilter<"Organization"> | string | null
+  city?: Prisma.StringNullableFilter<"Organization"> | string | null
+  state?: Prisma.StringNullableFilter<"Organization"> | string | null
   active?: Prisma.BoolFilter<"Organization"> | boolean
   isPlatformOwner?: Prisma.BoolFilter<"Organization"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Organization"> | Date | string
@@ -217,6 +257,11 @@ export type OrganizationOrderByWithRelationInput = {
   legalName?: Prisma.SortOrder
   tradeName?: Prisma.SortOrder
   document?: Prisma.SortOrderInput | Prisma.SortOrder
+  segment?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  state?: Prisma.SortOrderInput | Prisma.SortOrder
   active?: Prisma.SortOrder
   isPlatformOwner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -235,6 +280,11 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OrganizationWhereInput | Prisma.OrganizationWhereInput[]
   legalName?: Prisma.StringFilter<"Organization"> | string
   tradeName?: Prisma.StringFilter<"Organization"> | string
+  segment?: Prisma.StringNullableFilter<"Organization"> | string | null
+  contactEmail?: Prisma.StringNullableFilter<"Organization"> | string | null
+  phone?: Prisma.StringNullableFilter<"Organization"> | string | null
+  city?: Prisma.StringNullableFilter<"Organization"> | string | null
+  state?: Prisma.StringNullableFilter<"Organization"> | string | null
   active?: Prisma.BoolFilter<"Organization"> | boolean
   isPlatformOwner?: Prisma.BoolFilter<"Organization"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Organization"> | Date | string
@@ -250,6 +300,11 @@ export type OrganizationOrderByWithAggregationInput = {
   legalName?: Prisma.SortOrder
   tradeName?: Prisma.SortOrder
   document?: Prisma.SortOrderInput | Prisma.SortOrder
+  segment?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  state?: Prisma.SortOrderInput | Prisma.SortOrder
   active?: Prisma.SortOrder
   isPlatformOwner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -267,6 +322,11 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   legalName?: Prisma.StringWithAggregatesFilter<"Organization"> | string
   tradeName?: Prisma.StringWithAggregatesFilter<"Organization"> | string
   document?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  segment?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  contactEmail?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  phone?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  city?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  state?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   active?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
   isPlatformOwner?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Organization"> | Date | string
@@ -278,6 +338,11 @@ export type OrganizationCreateInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -293,6 +358,11 @@ export type OrganizationUncheckedCreateInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -308,6 +378,11 @@ export type OrganizationUpdateInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -323,6 +398,11 @@ export type OrganizationUncheckedUpdateInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -338,6 +418,11 @@ export type OrganizationCreateManyInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -349,6 +434,11 @@ export type OrganizationUpdateManyMutationInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -360,6 +450,11 @@ export type OrganizationUncheckedUpdateManyInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -371,6 +466,11 @@ export type OrganizationCountOrderByAggregateInput = {
   legalName?: Prisma.SortOrder
   tradeName?: Prisma.SortOrder
   document?: Prisma.SortOrder
+  segment?: Prisma.SortOrder
+  contactEmail?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
   active?: Prisma.SortOrder
   isPlatformOwner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -382,6 +482,11 @@ export type OrganizationMaxOrderByAggregateInput = {
   legalName?: Prisma.SortOrder
   tradeName?: Prisma.SortOrder
   document?: Prisma.SortOrder
+  segment?: Prisma.SortOrder
+  contactEmail?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
   active?: Prisma.SortOrder
   isPlatformOwner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -393,6 +498,11 @@ export type OrganizationMinOrderByAggregateInput = {
   legalName?: Prisma.SortOrder
   tradeName?: Prisma.SortOrder
   document?: Prisma.SortOrder
+  segment?: Prisma.SortOrder
+  contactEmail?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
   active?: Prisma.SortOrder
   isPlatformOwner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -478,6 +588,11 @@ export type OrganizationCreateWithoutMembershipsInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -492,6 +607,11 @@ export type OrganizationUncheckedCreateWithoutMembershipsInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -522,6 +642,11 @@ export type OrganizationUpdateWithoutMembershipsInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -536,6 +661,11 @@ export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -550,6 +680,11 @@ export type OrganizationCreateWithoutImplementationsInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -564,6 +699,11 @@ export type OrganizationUncheckedCreateWithoutImplementationsInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -594,6 +734,11 @@ export type OrganizationUpdateWithoutImplementationsInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -608,6 +753,11 @@ export type OrganizationUncheckedUpdateWithoutImplementationsInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -622,6 +772,11 @@ export type OrganizationCreateWithoutCalendarEventsInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -636,6 +791,11 @@ export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -666,6 +826,11 @@ export type OrganizationUpdateWithoutCalendarEventsInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -680,6 +845,11 @@ export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -694,6 +864,11 @@ export type OrganizationCreateWithoutAuditLogsInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -708,6 +883,11 @@ export type OrganizationUncheckedCreateWithoutAuditLogsInput = {
   legalName: string
   tradeName: string
   document?: string | null
+  segment?: string | null
+  contactEmail?: string | null
+  phone?: string | null
+  city?: string | null
+  state?: string | null
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: Date | string
@@ -738,6 +918,11 @@ export type OrganizationUpdateWithoutAuditLogsInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -752,6 +937,11 @@ export type OrganizationUncheckedUpdateWithoutAuditLogsInput = {
   legalName?: Prisma.StringFieldUpdateOperationsInput | string
   tradeName?: Prisma.StringFieldUpdateOperationsInput | string
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  segment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPlatformOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -824,6 +1014,11 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   legalName?: boolean
   tradeName?: boolean
   document?: boolean
+  segment?: boolean
+  contactEmail?: boolean
+  phone?: boolean
+  city?: boolean
+  state?: boolean
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: boolean
@@ -840,6 +1035,11 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   legalName?: boolean
   tradeName?: boolean
   document?: boolean
+  segment?: boolean
+  contactEmail?: boolean
+  phone?: boolean
+  city?: boolean
+  state?: boolean
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: boolean
@@ -851,6 +1051,11 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   legalName?: boolean
   tradeName?: boolean
   document?: boolean
+  segment?: boolean
+  contactEmail?: boolean
+  phone?: boolean
+  city?: boolean
+  state?: boolean
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: boolean
@@ -862,13 +1067,18 @@ export type OrganizationSelectScalar = {
   legalName?: boolean
   tradeName?: boolean
   document?: boolean
+  segment?: boolean
+  contactEmail?: boolean
+  phone?: boolean
+  city?: boolean
+  state?: boolean
   active?: boolean
   isPlatformOwner?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "legalName" | "tradeName" | "document" | "active" | "isPlatformOwner" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "legalName" | "tradeName" | "document" | "segment" | "contactEmail" | "phone" | "city" | "state" | "active" | "isPlatformOwner" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   memberships?: boolean | Prisma.Organization$membershipsArgs<ExtArgs>
   implementations?: boolean | Prisma.Organization$implementationsArgs<ExtArgs>
@@ -892,6 +1102,11 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     legalName: string
     tradeName: string
     document: string | null
+    segment: string | null
+    contactEmail: string | null
+    phone: string | null
+    city: string | null
+    state: string | null
     active: boolean
     isPlatformOwner: boolean
     createdAt: Date
@@ -1327,6 +1542,11 @@ export interface OrganizationFieldRefs {
   readonly legalName: Prisma.FieldRef<"Organization", 'String'>
   readonly tradeName: Prisma.FieldRef<"Organization", 'String'>
   readonly document: Prisma.FieldRef<"Organization", 'String'>
+  readonly segment: Prisma.FieldRef<"Organization", 'String'>
+  readonly contactEmail: Prisma.FieldRef<"Organization", 'String'>
+  readonly phone: Prisma.FieldRef<"Organization", 'String'>
+  readonly city: Prisma.FieldRef<"Organization", 'String'>
+  readonly state: Prisma.FieldRef<"Organization", 'String'>
   readonly active: Prisma.FieldRef<"Organization", 'Boolean'>
   readonly isPlatformOwner: Prisma.FieldRef<"Organization", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Organization", 'DateTime'>

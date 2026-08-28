@@ -272,6 +272,10 @@ create table if not exists implementacao.implementations (
   owner_id uuid references implementacao.users(id) on delete set null,
   name text not null,
   status implementacao."ImplementationStatus" not null default 'PLANNED',
+  current_phase_code text,
+  selected_phase_codes jsonb,
+  estimated_weeks integer not null default 0 check (estimated_weeks >= 0),
+  planned_meetings integer not null default 0 check (planned_meetings >= 0),
   started_at date,
   due_at date,
   completed_at timestamptz,
@@ -283,6 +287,10 @@ create table if not exists implementacao.implementations (
 alter table implementacao.implementations
   add column if not exists organization_product_id uuid references implementacao.organization_products(id) on delete set null;
 alter table implementacao.implementations add column if not exists completed_at timestamptz;
+alter table implementacao.implementations add column if not exists current_phase_code text;
+alter table implementacao.implementations add column if not exists selected_phase_codes jsonb;
+alter table implementacao.implementations add column if not exists estimated_weeks integer not null default 0;
+alter table implementacao.implementations add column if not exists planned_meetings integer not null default 0;
 
 create index if not exists implementations_organization_status_idx
   on implementacao.implementations (organization_id, status);

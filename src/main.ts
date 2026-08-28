@@ -9,8 +9,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
   app.use(helmet());
+  const allowedOrigins = config
+    .getOrThrow<string>('WEB_ORIGIN')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
   app.enableCors({
-    origin: config.getOrThrow<string>('WEB_ORIGIN'),
+    origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
     credentials: true,
   });
   app.setGlobalPrefix('api/v1');

@@ -3,7 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import Joi from 'joi';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
-import { DemoModule } from './modules/demo/demo.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { ImplementationsModule } from './modules/implementations/implementations.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -17,12 +20,16 @@ import { DemoModule } from './modules/demo/demo.module';
         WEB_ORIGIN: Joi.string().uri().required(),
         JWT_ACCESS_SECRET: Joi.string().min(32).required(),
         JWT_REFRESH_SECRET: Joi.string().min(32).required(),
-        DEMO_MODE: Joi.boolean().default(false),
+        SUPABASE_URL: Joi.string().uri().required(),
+        SUPABASE_SERVICE_ROLE_KEY: Joi.string().required(),
       }),
     }),
     PrismaModule,
     HealthModule,
-    DemoModule,
+    AuthModule,
+    OrganizationsModule,
+    ImplementationsModule,
+    ProductsModule,
   ],
 })
 export class AppModule {}
