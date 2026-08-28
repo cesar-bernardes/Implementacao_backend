@@ -98,11 +98,31 @@ export class ProductsService {
     await this.implementations.synchronizeVersionStructure(versionId, normalizedDefinition as TemplateDefinition);
     const implementations = await this.prisma.implementation.findMany({
       where: { templateVersionId: versionId },
-      select: { id: true },
+      select: { id: true, selectedPhaseCodes: true, startedAt: true, currentPhaseCode: true },
     });
-    await Promise.all(implementations.map((implementation) =>
-      this.prisma.$executeRaw`select implementacao.sync_implementation_snapshot(${implementation.id}::uuid)`,
-    ));
+    await Promise.all(implementations.map(async (implementation) => {
+      const previouslySelected = Array.isArray(implementation.selectedPhaseCodes)
+        ? implementation.selectedPhaseCodes.filter((code): code is string => typeof code === 'string')
+        : normalized.map((phase) => phase.code);
+      let selectedPhaseCodes = normalized
+        .filter((phase) => phase.isBase || previouslySelected.includes(phase.code))
+        .map((phase) => phase.code);
+      if (!selectedPhaseCodes.length && normalized[0]) selectedPhaseCodes = [normalized[0].code];
+      const selectedPhases = normalized.filter((phase) => selectedPhaseCodes.includes(phase.code));
+      const estimatedWeeks = selectedPhases.reduce((total, phase) => total + phase.durationWeeks, 0);
+      const plannedMeetings = selectedPhases.reduce((total, phase) => total + phase.durationWeeks * phase.meetingsPerWeek, 0);
+      const dueAt = implementation.startedAt
+        ? new Date(implementation.startedAt.getTime() + estimatedWeeks * 7 * 24 * 60 * 60 * 1000)
+        : null;
+      const currentPhaseCode = selectedPhaseCodes.includes(implementation.currentPhaseCode ?? '')
+        ? implementation.currentPhaseCode
+        : selectedPhaseCodes[0] ?? null;
+      await this.prisma.implementation.update({
+        where: { id: implementation.id },
+        data: { selectedPhaseCodes, estimatedWeeks, plannedMeetings, dueAt, currentPhaseCode },
+      });
+      await this.prisma.$executeRaw`select implementacao.sync_implementation_snapshot(${implementation.id}::uuid)`;
+    }));
     return { id: versionId, definition: normalizedDefinition, synchronizedImplementations: implementations.length };
   }
 }

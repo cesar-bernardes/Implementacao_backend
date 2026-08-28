@@ -280,6 +280,7 @@ export class ImplementationsService {
   }
 
   async synchronizeVersionStructure(versionId: string, definition: TemplateDefinition) {
+    const desiredPhaseCodes = new Set((definition.phases ?? []).map((phase) => phase.code));
     const desiredQuestionCodes = new Set((definition.phases ?? []).flatMap((phase) => phase.questions.map((question) => question.code)));
     const existingQuestions = await this.prisma.$queryRaw<Array<{ id: string; code: string }>>`
       select id, code from implementacao.template_questions where template_version_id = ${versionId}::uuid
@@ -297,6 +298,24 @@ export class ImplementationsService {
       `;
       await this.prisma.$executeRaw`
         delete from implementacao.template_questions where id = ${question.id}::uuid
+      `;
+    }
+    const existingPhases = await this.prisma.$queryRaw<Array<{ id: string; code: string }>>`
+      select id, code from implementacao.template_phases where template_version_id = ${versionId}::uuid
+    `;
+    for (const existingPhase of existingPhases) {
+      if (desiredPhaseCodes.has(existingPhase.code)) continue;
+      await this.prisma.$executeRaw`
+        update implementacao.implementation_phases ip
+           set active = false, updated_at = now()
+         where ip.code = ${existingPhase.code}
+           and exists (
+             select 1 from implementacao.implementations i
+              where i.id = ip.implementation_id and i.template_version_id = ${versionId}::uuid
+           )
+      `;
+      await this.prisma.$executeRaw`
+        delete from implementacao.template_phases where id = ${existingPhase.id}::uuid
       `;
     }
     for (const phase of definition.phases ?? []) {
