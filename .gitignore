@@ -9,3 +9,5 @@ coverage/
 .env.development
 .env.*.local
 !.env.example
+
+.env*

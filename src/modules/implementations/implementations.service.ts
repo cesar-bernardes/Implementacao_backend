@@ -300,6 +300,16 @@ export class ImplementationsService {
         delete from implementacao.template_questions where id = ${question.id}::uuid
       `;
     }
+    await this.prisma.$executeRaw`
+      update implementacao.implementation_questions iq
+         set sort_order = iq.sort_order + 1000000, updated_at = now()
+       where iq.active = false
+         and exists (
+           select 1 from implementacao.implementations i
+            where i.id = iq.implementation_id and i.template_version_id = ${versionId}::uuid
+         )
+         and iq.sort_order < 1000000
+    `;
     const existingPhases = await this.prisma.$queryRaw<Array<{ id: string; code: string }>>`
       select id, code from implementacao.template_phases where template_version_id = ${versionId}::uuid
     `;
@@ -318,6 +328,16 @@ export class ImplementationsService {
         delete from implementacao.template_phases where id = ${existingPhase.id}::uuid
       `;
     }
+    await this.prisma.$executeRaw`
+      update implementacao.implementation_phases ip
+         set sort_order = ip.sort_order + 1000000, updated_at = now()
+       where ip.active = false
+         and exists (
+           select 1 from implementacao.implementations i
+            where i.id = ip.implementation_id and i.template_version_id = ${versionId}::uuid
+         )
+         and ip.sort_order < 1000000
+    `;
     for (const phase of definition.phases ?? []) {
       const [phaseRow] = await this.prisma.$queryRaw<Array<{ id: string }>>`
         insert into implementacao.template_phases (template_version_id, code, name, sort_order)

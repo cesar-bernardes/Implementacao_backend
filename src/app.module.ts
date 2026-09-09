@@ -12,7 +12,7 @@ import { ProductsModule } from './modules/products/products.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', '.env.development'],
+      envFilePath: ['.env.local', '.env', '.env.development'],
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(),
         DIRECT_URL: Joi.string().required(),
