@@ -44,19 +44,29 @@ export class AuthService {
   }
 
   async accessStatus(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
     const user = await this.prisma.user.findUnique({
-      where: { email: email.trim().toLowerCase() },
+      where: { email: normalizedEmail },
       include: { memberships: true },
     });
     if (!user || !user.active) return { status: 'UNKNOWN' as const };
-    const firstAccess = user.memberships.some((membership) => membership.status === 'INVITED');
+    const globalInvitation = user.globalRole !== 'USER'
+      ? await this.supabase.invitationStatus(normalizedEmail)
+      : null;
+    const firstAccess = user.memberships.some((membership) => membership.status === 'INVITED')
+      || Boolean(globalInvitation?.awaitingFirstAccess);
     return { status: firstAccess ? 'FIRST_ACCESS' as const : 'ACTIVE' as const };
   }
 
   async requestFirstAccess(email: string, redirectTo: string) {
     const normalizedEmail = email.trim().toLowerCase();
     const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail }, include: { memberships: true } });
-    if (!user || !user.memberships.some((membership) => membership.status === 'INVITED')) {
+    const globalInvitation = user?.globalRole !== 'USER'
+      ? await this.supabase.invitationStatus(normalizedEmail)
+      : null;
+    const awaitingFirstAccess = Boolean(user?.memberships.some((membership) => membership.status === 'INVITED'))
+      || Boolean(globalInvitation?.awaitingFirstAccess);
+    if (!user || !awaitingFirstAccess) {
       return { message: 'Se o usuário estiver aguardando ativação, um novo acesso será enviado.' };
     }
     await this.supabase.resendInvite(normalizedEmail, redirectTo);
@@ -65,6 +75,10 @@ export class AuthService {
 
   async invite(email: string, redirectTo: string) {
     return this.supabase.invite(email.trim().toLowerCase(), redirectTo);
+  }
+
+  invitationStatus(email: string) {
+    return this.supabase.invitationStatus(email.trim().toLowerCase());
   }
 
   async updateInvitedUser(authProviderId: string, email: string, name: string) {

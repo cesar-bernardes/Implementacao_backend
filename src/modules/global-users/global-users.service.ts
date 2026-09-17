@@ -14,15 +14,16 @@ export class GlobalUsersService {
     private readonly config: ConfigService,
   ) {}
 
-  list() {
-    return this.prisma.user.findMany({
+  async list() {
+    const users = await this.prisma.user.findMany({
       where: { globalRole: { in: ['GLOBAL_ADMIN', 'GLOBAL_RESTRICTED'] } },
-      select: {
-        id: true, name: true, email: true, globalRole: true, active: true, createdAt: true,
-        memberships: { where: { organization: { isPlatformOwner: true } }, select: { status: true }, take: 1 },
-      },
+      select: { id: true, name: true, email: true, globalRole: true, active: true, createdAt: true },
       orderBy: [{ active: 'desc' }, { name: 'asc' }],
     });
+    return Promise.all(users.map(async (user) => {
+      const invitation = await this.auth.invitationStatus(user.email);
+      return { ...user, invitationStatus: invitation.awaitingFirstAccess ? 'INVITED' : 'ACTIVE' };
+    }));
   }
 
   async invite(name: string, email: string, globalRole: GlobalRole) {
@@ -33,22 +34,12 @@ export class GlobalUsersService {
     const existing = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) throw new BadRequestException('Já existe um usuário cadastrado com este e-mail.');
 
-    const platformOrganization = await this.prisma.organization.findFirst({ where: { isPlatformOwner: true, active: true } });
-    if (!platformOrganization) throw new BadRequestException('A organização principal da GD Tech não foi encontrada.');
-
     const pendingUser = await this.prisma.user.create({
       data: {
         authProviderId: `pending-${randomUUID()}`,
         email: normalizedEmail,
         name: normalizedName,
         globalRole,
-        memberships: {
-          create: {
-            organizationId: platformOrganization.id,
-            role: globalRole === 'GLOBAL_ADMIN' ? 'OWNER' : 'IMPLEMENTATION_RESPONSIBLE',
-            status: 'INVITED',
-          },
-        },
       },
     });
 
@@ -63,12 +54,9 @@ export class GlobalUsersService {
 
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: pendingUser.id },
-      select: {
-        id: true, name: true, email: true, globalRole: true, active: true, createdAt: true,
-        memberships: { where: { organization: { isPlatformOwner: true } }, select: { status: true }, take: 1 },
-      },
+      select: { id: true, name: true, email: true, globalRole: true, active: true, createdAt: true },
     });
 
-    return { user, message: 'Convite enviado. O usuário definirá a senha no primeiro acesso.' };
+    return { user: { ...user, invitationStatus: 'INVITED' as const }, message: 'Convite enviado. O usuário definirá a senha no primeiro acesso.' };
   }
 }

@@ -42,6 +42,16 @@ export class SupabaseAuthService {
     return data.user;
   }
 
+  async invitationStatus(email: string) {
+    const users = await this.client.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (users.error) throw users.error;
+    const authUser = users.data.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
+    return {
+      exists: Boolean(authUser),
+      awaitingFirstAccess: Boolean(authUser && !authUser.email_confirmed_at),
+    };
+  }
+
   async updateUser(userId: string, email: string, name: string) {
     const { data, error } = await this.client.auth.admin.updateUserById(userId, {
       email,
