@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsArray, IsOptional, IsString, MinLength } from 'class-validator';
 import { DemoAdminGuard } from '../organizations/demo-admin.guard';
@@ -22,13 +30,20 @@ export class ProductsController {
   constructor(private readonly products: ProductsService) {}
 
   @Get('configuration')
-  configuration() { return this.products.configuration(); }
+  configuration() {
+    return this.products.configuration();
+  }
 
   @Post()
-  create(@Body() body: CreateProductDto) { return this.products.create(body); }
+  create(@Body() body: CreateProductDto) {
+    return this.products.create(body);
+  }
 
   @Patch('template-versions/:versionId/configuration')
-  update(@Param('versionId') versionId: string, @Body() body: ProductDefinitionDto) {
+  update(
+    @Param('versionId') versionId: string,
+    @Body() body: ProductDefinitionDto,
+  ) {
     return this.products.updateConfiguration(versionId, body as never);
   }
 }

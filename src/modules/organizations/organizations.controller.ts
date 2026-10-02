@@ -1,6 +1,23 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { IsArray, IsEmail, IsIn, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { DemoAdminGuard } from './demo-admin.guard';
 import { OrganizationsService } from './organizations.service';
@@ -11,7 +28,8 @@ class MemberDto {
   @IsString() @MinLength(2) name!: string;
   @IsEmail() email!: string;
   @IsOptional() @IsString() phone?: string;
-  @IsIn(['OWNER', 'SUPERVISOR', 'IMPLEMENTATION_RESPONSIBLE']) role!: 'OWNER' | 'SUPERVISOR' | 'IMPLEMENTATION_RESPONSIBLE';
+  @IsIn(['OWNER', 'SUPERVISOR', 'IMPLEMENTATION_RESPONSIBLE']) role!:
+    'OWNER' | 'SUPERVISOR' | 'IMPLEMENTATION_RESPONSIBLE';
 }
 
 class CreateOrganizationDto {
@@ -23,10 +41,15 @@ class CreateOrganizationDto {
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsString() city?: string;
   @IsOptional() @IsString() state?: string;
-  @IsArray() @ValidateNested({ each: true }) @Type(() => MemberDto) members!: MemberDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MemberDto)
+  members!: MemberDto[];
 }
 
-class UpdateMemberDto extends MemberDto { @IsString() id!: string; }
+class UpdateMemberDto extends MemberDto {
+  @IsString() id!: string;
+}
 class UpdateOrganizationDto {
   @IsString() @MinLength(2) legalName!: string;
   @IsString() @MinLength(2) tradeName!: string;
@@ -36,7 +59,10 @@ class UpdateOrganizationDto {
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsString() city?: string;
   @IsOptional() @IsString() state?: string;
-  @IsArray() @ValidateNested({ each: true }) @Type(() => UpdateMemberDto) members!: UpdateMemberDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateMemberDto)
+  members!: UpdateMemberDto[];
 }
 
 @ApiTags('organizations')
@@ -48,30 +74,55 @@ export class OrganizationsController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @ApiOperation({ summary: 'Lista empresas visíveis ao administrador global' })
-  list(@Req() request: Request & { actor: { id: string; globalRole: string } }) { return this.organizations.listFor(request.actor); }
+  list(
+    @Req() request: Request & { actor: { id: string; globalRole: string } },
+  ) {
+    return this.organizations.listFor(request.actor);
+  }
 
   @Get(':id')
   @UseGuards(AuthenticatedGuard)
-  get(@Param('id') id: string, @Req() request: Request & { actor: { id: string; globalRole: string } }) { return this.organizations.getFor(id, request.actor); }
+  get(
+    @Param('id') id: string,
+    @Req() request: Request & { actor: { id: string; globalRole: string } },
+  ) {
+    return this.organizations.getFor(id, request.actor);
+  }
 
   @Post()
   @UseGuards(DemoAdminGuard)
   @ApiOperation({ summary: 'Cadastra uma empresa e seus responsáveis' })
-  create(@Body() body: CreateOrganizationDto) { return this.organizations.create(body); }
+  create(@Body() body: CreateOrganizationDto) {
+    return this.organizations.create(body);
+  }
 
   @Patch(':id')
   @UseGuards(DemoAdminGuard)
-  update(@Param('id') id: string, @Body() body: UpdateOrganizationDto) { return this.organizations.update(id, body); }
+  update(@Param('id') id: string, @Body() body: UpdateOrganizationDto) {
+    return this.organizations.update(id, body);
+  }
 
   @Post(':id/members/:membershipId/resend-invite')
   @UseGuards(DemoAdminGuard)
-  resend(@Param('id') id: string, @Param('membershipId') membershipId: string) { return this.organizations.resendInvite(id, membershipId); }
+  resend(@Param('id') id: string, @Param('membershipId') membershipId: string) {
+    return this.organizations.resendInvite(id, membershipId);
+  }
 
   @Post(':id/members/:membershipId/first-access-link')
   @UseGuards(DemoAdminGuard)
-  firstAccessLink(@Param('id') id: string, @Param('membershipId') membershipId: string) { return this.organizations.generateFirstAccessLink(id, membershipId); }
+  firstAccessLink(
+    @Param('id') id: string,
+    @Param('membershipId') membershipId: string,
+  ) {
+    return this.organizations.generateFirstAccessLink(id, membershipId);
+  }
 
   @Post(':id/members/:membershipId/temporary-access')
   @UseGuards(DemoAdminGuard)
-  temporaryAccess(@Param('id') id: string, @Param('membershipId') membershipId: string) { return this.organizations.generateTemporaryAccess(id, membershipId); }
+  temporaryAccess(
+    @Param('id') id: string,
+    @Param('membershipId') membershipId: string,
+  ) {
+    return this.organizations.generateTemporaryAccess(id, membershipId);
+  }
 }

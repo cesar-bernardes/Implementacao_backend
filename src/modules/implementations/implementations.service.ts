@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 
 type Actor = { id: string; globalRole: string };
@@ -11,10 +16,53 @@ type CreateImplementationInput = {
   startedAt?: string;
   dueAt?: string;
 };
-type SaveAnswerInput = { checklistValue?: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_DONE'; numberValue?: number; textValue?: string; notes?: string };
-export type TemplateDefinition = { phases?: Array<{ code: string; name: string; order: number; isBase?: boolean; durationWeeks?: number; meetingsPerWeek?: number; questions: Array<{ code: string; text: string; type: string; required: boolean; config?: Record<string, unknown> }> }> };
-type PhaseRow = { id: string; code: string; name: string; sortOrder: number; startedAt: Date | null; completedAt: Date | null };
-type QuestionRow = { id: string; phaseId: string; code: string; prompt: string; responseType: 'CHECKLIST' | 'NUMBER' | 'SHORT_TEXT'; required: boolean; responseConfig: unknown; sortOrder: number; checklistValue: string | null; numberValue: string | null; textValue: string | null; notes: string | null; answeredAt: Date | null; answeredByName: string | null };
+type SaveAnswerInput = {
+  checklistValue?: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_DONE';
+  numberValue?: number;
+  textValue?: string;
+  notes?: string;
+};
+export type TemplateDefinition = {
+  phases?: Array<{
+    code: string;
+    name: string;
+    order: number;
+    isBase?: boolean;
+    durationWeeks?: number;
+    meetingsPerWeek?: number;
+    questions: Array<{
+      code: string;
+      text: string;
+      type: string;
+      required: boolean;
+      config?: Record<string, unknown>;
+    }>;
+  }>;
+};
+type PhaseRow = {
+  id: string;
+  code: string;
+  name: string;
+  sortOrder: number;
+  startedAt: Date | null;
+  completedAt: Date | null;
+};
+type QuestionRow = {
+  id: string;
+  phaseId: string;
+  code: string;
+  prompt: string;
+  responseType: 'CHECKLIST' | 'NUMBER' | 'SHORT_TEXT';
+  required: boolean;
+  responseConfig: unknown;
+  sortOrder: number;
+  checklistValue: string | null;
+  numberValue: string | null;
+  textValue: string | null;
+  notes: string | null;
+  answeredAt: Date | null;
+  answeredByName: string | null;
+};
 
 const implementationInclude = {
   organization: { select: { id: true, tradeName: true } },
@@ -23,7 +71,9 @@ const implementationInclude = {
     select: {
       id: true,
       version: true,
-      template: { select: { name: true, product: { select: { id: true, name: true } } } },
+      template: {
+        select: { name: true, product: { select: { id: true, name: true } } },
+      },
     },
   },
 } as const;
@@ -34,9 +84,21 @@ export class ImplementationsService {
 
   listFor(actor: Actor) {
     return this.prisma.implementation.findMany({
-      where: actor.globalRole === 'GLOBAL_ADMIN'
-        ? undefined
-        : { OR: [{ ownerId: actor.id }, { organization: { memberships: { some: { userId: actor.id, status: 'ACTIVE' } } } }] },
+      where:
+        actor.globalRole === 'GLOBAL_ADMIN'
+          ? undefined
+          : {
+              OR: [
+                { ownerId: actor.id },
+                {
+                  organization: {
+                    memberships: {
+                      some: { userId: actor.id, status: 'ACTIVE' },
+                    },
+                  },
+                },
+              ],
+            },
       include: implementationInclude,
       orderBy: { createdAt: 'desc' },
     });
@@ -69,7 +131,13 @@ export class ImplementationsService {
         orderBy: { name: 'asc' },
       }),
       this.prisma.user.findMany({
-        where: { active: true, OR: [{ globalRole: { in: ['GLOBAL_ADMIN', 'GLOBAL_RESTRICTED'] } }, { email: { endsWith: '@granddos.tech' } }] },
+        where: {
+          active: true,
+          OR: [
+            { globalRole: { in: ['GLOBAL_ADMIN', 'GLOBAL_RESTRICTED'] } },
+            { email: { endsWith: '@granddos.tech' } },
+          ],
+        },
         select: { id: true, name: true, email: true },
         orderBy: { name: 'asc' },
       }),
@@ -79,31 +147,61 @@ export class ImplementationsService {
 
   async create(input: CreateImplementationInput) {
     const [organization, templateVersion, owner] = await Promise.all([
-      this.prisma.organization.findFirst({ where: { id: input.organizationId, active: true } }),
+      this.prisma.organization.findFirst({
+        where: { id: input.organizationId, active: true },
+      }),
       this.prisma.implementationTemplateVersion.findFirst({
-        where: { id: input.templateVersionId, status: 'PUBLISHED', template: { product: { active: true } } },
+        where: {
+          id: input.templateVersionId,
+          status: 'PUBLISHED',
+          template: { product: { active: true } },
+        },
       }),
       input.ownerId
-        ? this.prisma.user.findFirst({ where: { id: input.ownerId, active: true, OR: [{ globalRole: { in: ['GLOBAL_ADMIN', 'GLOBAL_RESTRICTED'] } }, { email: { endsWith: '@granddos.tech' } }] } })
+        ? this.prisma.user.findFirst({
+            where: {
+              id: input.ownerId,
+              active: true,
+              OR: [
+                { globalRole: { in: ['GLOBAL_ADMIN', 'GLOBAL_RESTRICTED'] } },
+                { email: { endsWith: '@granddos.tech' } },
+              ],
+            },
+          })
         : Promise.resolve(null),
     ]);
-    if (!organization) throw new BadRequestException('Selecione uma empresa ativa.');
-    if (!templateVersion) throw new BadRequestException('Selecione uma versão publicada do produto.');
-    if (input.ownerId && !owner) throw new BadRequestException('Selecione um responsável GD Tech válido.');
+    if (!organization)
+      throw new BadRequestException('Selecione uma empresa ativa.');
+    if (!templateVersion)
+      throw new BadRequestException(
+        'Selecione uma versão publicada do produto.',
+      );
+    if (input.ownerId && !owner)
+      throw new BadRequestException('Selecione um responsável GD Tech válido.');
 
     const definition = templateVersion.definition as TemplateDefinition;
     const availablePhases = definition.phases ?? [];
     const requestedCodes = new Set(input.selectedPhaseCodes ?? []);
-    const selectedPhases = availablePhases.filter((phase) => phase.isBase || requestedCodes.has(phase.code));
-    if (!selectedPhases.length) throw new BadRequestException('Selecione ao menos um módulo do produto.');
+    const selectedPhases = availablePhases.filter(
+      (phase) => phase.isBase || requestedCodes.has(phase.code),
+    );
+    if (!selectedPhases.length)
+      throw new BadRequestException('Selecione ao menos um módulo do produto.');
     const selectedPhaseCodes = selectedPhases.map((phase) => phase.code);
-    const estimatedWeeks = selectedPhases.reduce((total, phase) => total + Math.max(1, Number(phase.durationWeeks) || 1), 0);
+    const estimatedWeeks = selectedPhases.reduce(
+      (total, phase) => total + Math.max(1, Number(phase.durationWeeks) || 1),
+      0,
+    );
     const plannedMeetings = selectedPhases.reduce((total, phase) => {
       const weeks = Math.max(1, Number(phase.durationWeeks) || 1);
       return total + weeks * Math.max(0, Number(phase.meetingsPerWeek) || 0);
     }, 0);
-    const startedAt = input.startedAt ? new Date(`${input.startedAt}T00:00:00.000Z`) : null;
-    const dueAt = startedAt ? new Date(startedAt.getTime() + estimatedWeeks * 7 * 24 * 60 * 60 * 1000) : null;
+    const startedAt = input.startedAt
+      ? new Date(`${input.startedAt}T00:00:00.000Z`)
+      : null;
+    const dueAt = startedAt
+      ? new Date(startedAt.getTime() + estimatedWeeks * 7 * 24 * 60 * 60 * 1000)
+      : null;
     await this.synchronizeVersionStructure(templateVersion.id, definition);
 
     const implementation = await this.prisma.implementation.create({
@@ -122,16 +220,28 @@ export class ImplementationsService {
       },
       include: implementationInclude,
     });
-    await this.prisma.$executeRaw`select implementacao.sync_implementation_snapshot(${implementation.id}::uuid)`;
+    await this.prisma
+      .$executeRaw`select implementacao.sync_implementation_snapshot(${implementation.id}::uuid)`;
     return implementation;
   }
 
   async getFor(id: string, actor: Actor) {
     const implementation = await this.authorizedImplementation(id, actor);
-    await this.synchronizeVersionStructure(implementation.templateVersionId, implementation.templateVersion.definition as TemplateDefinition);
-    await this.prisma.$executeRaw`select implementacao.sync_implementation_snapshot(${id}::uuid)`;
-    const selectedPhaseCodes = this.selectedCodes(implementation.selectedPhaseCodes, implementation.templateVersion.definition as TemplateDefinition);
-    const progressState = await this.synchronizeProgressState(id, implementation.status, selectedPhaseCodes);
+    await this.synchronizeVersionStructure(
+      implementation.templateVersionId,
+      implementation.templateVersion.definition as TemplateDefinition,
+    );
+    await this.prisma
+      .$executeRaw`select implementacao.sync_implementation_snapshot(${id}::uuid)`;
+    const selectedPhaseCodes = this.selectedCodes(
+      implementation.selectedPhaseCodes,
+      implementation.templateVersion.definition as TemplateDefinition,
+    );
+    const progressState = await this.synchronizeProgressState(
+      id,
+      implementation.status,
+      selectedPhaseCodes,
+    );
 
     const phases = await this.prisma.$queryRaw<PhaseRow[]>`
       select id, code, name, sort_order as "sortOrder", started_at as "startedAt", completed_at as "completedAt"
@@ -153,15 +263,22 @@ export class ImplementationsService {
       order by iq.implementation_phase_id, iq.sort_order
     `;
 
-    const visiblePhases = phases.filter((phase) => selectedPhaseCodes.includes(phase.code));
+    const visiblePhases = phases.filter((phase) =>
+      selectedPhaseCodes.includes(phase.code),
+    );
     const phaseConfiguration = new Map(
-      ((implementation.templateVersion.definition as TemplateDefinition).phases ?? []).map((phase) => [phase.code, phase]),
+      (
+        (implementation.templateVersion.definition as TemplateDefinition)
+          .phases ?? []
+      ).map((phase) => [phase.code, phase]),
     );
     return {
       ...implementation,
       ...progressState,
       permissions: {
-        canManageCurrentPhase: actor.globalRole === 'GLOBAL_ADMIN' || implementation.ownerId === actor.id,
+        canManageCurrentPhase:
+          actor.globalRole === 'GLOBAL_ADMIN' ||
+          implementation.ownerId === actor.id,
         canChangeOwner: actor.globalRole === 'GLOBAL_ADMIN',
       },
       phases: visiblePhases.map((phase) => {
@@ -170,27 +287,54 @@ export class ImplementationsService {
           ...phase,
           isBase: configuration?.isBase ?? false,
           durationWeeks: Math.max(1, Number(configuration?.durationWeeks) || 1),
-          meetingsPerWeek: Math.max(0, Number(configuration?.meetingsPerWeek) || 0),
-          questions: questions.filter((question) => question.phaseId === phase.id),
+          meetingsPerWeek: Math.max(
+            0,
+            Number(configuration?.meetingsPerWeek) || 0,
+          ),
+          questions: questions.filter(
+            (question) => question.phaseId === phase.id,
+          ),
         };
       }),
     };
   }
 
-  async saveAnswer(id: string, questionId: string, input: SaveAnswerInput, actor: Actor) {
+  async saveAnswer(
+    id: string,
+    questionId: string,
+    input: SaveAnswerInput,
+    actor: Actor,
+  ) {
     const implementation = await this.authorizedImplementation(id, actor);
-    const selectedPhaseCodes = this.selectedCodes(implementation.selectedPhaseCodes, implementation.templateVersion.definition as TemplateDefinition);
-    const [question] = await this.prisma.$queryRaw<Array<{ responseType: 'CHECKLIST' | 'NUMBER' | 'SHORT_TEXT'; phaseCode: string }>>`
+    const selectedPhaseCodes = this.selectedCodes(
+      implementation.selectedPhaseCodes,
+      implementation.templateVersion.definition as TemplateDefinition,
+    );
+    const [question] = await this.prisma.$queryRaw<
+      Array<{
+        responseType: 'CHECKLIST' | 'NUMBER' | 'SHORT_TEXT';
+        phaseCode: string;
+      }>
+    >`
       select iq.response_type::text as "responseType", ip.code as "phaseCode"
       from implementacao.implementation_questions iq
       join implementacao.implementation_phases ip on ip.id = iq.implementation_phase_id
       where iq.id = ${questionId}::uuid and iq.implementation_id = ${id}::uuid and iq.active = true
     `;
-    if (!question) throw new NotFoundException('Pergunta não encontrada nesta implementação.');
-    if (!selectedPhaseCodes.includes(question.phaseCode)) throw new ForbiddenException('Este módulo não foi contratado pela empresa.');
+    if (!question)
+      throw new NotFoundException(
+        'Pergunta não encontrada nesta implementação.',
+      );
+    if (!selectedPhaseCodes.includes(question.phaseCode))
+      throw new ForbiddenException(
+        'Este módulo não foi contratado pela empresa.',
+      );
 
     if (question.responseType === 'CHECKLIST') {
-      if (!input.checklistValue) throw new BadRequestException('Selecione Concluído, Em andamento ou Não realizado.');
+      if (!input.checklistValue)
+        throw new BadRequestException(
+          'Selecione Concluído, Em andamento ou Não realizado.',
+        );
       await this.prisma.$executeRaw`
         insert into implementacao.implementation_answers (implementation_question_id, checklist_value, notes, answered_by)
         values (${questionId}::uuid, ${input.checklistValue}::implementacao."ChecklistAnswer", ${input.notes ?? null}, ${actor.id}::uuid)
@@ -198,7 +342,8 @@ export class ImplementationsService {
           number_value = null, text_value = null, notes = excluded.notes, answered_by = excluded.answered_by, updated_at = now()
       `;
     } else if (question.responseType === 'NUMBER') {
-      if (input.numberValue === undefined) throw new BadRequestException('Informe um número.');
+      if (input.numberValue === undefined)
+        throw new BadRequestException('Informe um número.');
       await this.prisma.$executeRaw`
         insert into implementacao.implementation_answers (implementation_question_id, number_value, notes, answered_by)
         values (${questionId}::uuid, ${input.numberValue}, ${input.notes ?? null}, ${actor.id}::uuid)
@@ -206,7 +351,10 @@ export class ImplementationsService {
           checklist_value = null, text_value = null, notes = excluded.notes, answered_by = excluded.answered_by, updated_at = now()
       `;
     } else {
-      if (!input.textValue?.trim()) throw new BadRequestException('Informe uma resposta de até 100 caracteres.');
+      if (!input.textValue?.trim())
+        throw new BadRequestException(
+          'Informe uma resposta de até 100 caracteres.',
+        );
       await this.prisma.$executeRaw`
         insert into implementacao.implementation_answers (implementation_question_id, text_value, notes, answered_by)
         values (${questionId}::uuid, ${input.textValue.trim()}, ${input.notes ?? null}, ${actor.id}::uuid)
@@ -222,7 +370,15 @@ export class ImplementationsService {
     existingStatus: 'PLANNED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELED',
     selectedPhaseCodes: string[],
   ) {
-    const phases = await this.prisma.$queryRaw<Array<{ code: string; sortOrder: number; total: number; completed: number; answered: number }>>`
+    const phases = await this.prisma.$queryRaw<
+      Array<{
+        code: string;
+        sortOrder: number;
+        total: number;
+        completed: number;
+        answered: number;
+      }>
+    >`
       select ip.code, ip.sort_order as "sortOrder",
              count(iq.id)::int as total,
              count(iq.id) filter (where
@@ -238,11 +394,22 @@ export class ImplementationsService {
       group by ip.code, ip.sort_order
       order by ip.sort_order
     `;
-    const selectedPhases = phases.filter((phase) => selectedPhaseCodes.includes(phase.code));
-    const currentPhase = selectedPhases.find((phase) => phase.total > 0 && phase.completed < phase.total) ?? selectedPhases.at(-1);
+    const selectedPhases = phases.filter((phase) =>
+      selectedPhaseCodes.includes(phase.code),
+    );
+    const currentPhase =
+      selectedPhases.find(
+        (phase) => phase.total > 0 && phase.completed < phase.total,
+      ) ?? selectedPhases.at(-1);
     const total = selectedPhases.reduce((sum, phase) => sum + phase.total, 0);
-    const completed = selectedPhases.reduce((sum, phase) => sum + phase.completed, 0);
-    const answered = selectedPhases.reduce((sum, phase) => sum + phase.answered, 0);
+    const completed = selectedPhases.reduce(
+      (sum, phase) => sum + phase.completed,
+      0,
+    );
+    const answered = selectedPhases.reduce(
+      (sum, phase) => sum + phase.answered,
+      0,
+    );
     const allCompleted = total > 0 && completed === total;
     const status = allCompleted
       ? 'COMPLETED'
@@ -260,7 +427,12 @@ export class ImplementationsService {
   }
 
   private selectedCodes(value: unknown, definition: TemplateDefinition) {
-    if (Array.isArray(value) && value.every((code) => typeof code === 'string') && value.length) return value as string[];
+    if (
+      Array.isArray(value) &&
+      value.every((code) => typeof code === 'string') &&
+      value.length
+    )
+      return value;
     return (definition.phases ?? []).map((phase) => phase.code);
   }
 
@@ -269,20 +441,47 @@ export class ImplementationsService {
       where: { id },
       include: {
         ...implementationInclude,
-        templateVersion: { include: { template: { include: { product: true } } } },
+        templateVersion: {
+          include: { template: { include: { product: true } } },
+        },
       },
     });
-    if (!implementation) throw new NotFoundException('Implementação não encontrada.');
-    if (actor.globalRole === 'GLOBAL_ADMIN' || implementation.ownerId === actor.id) return implementation;
-    const membership = await this.prisma.membership.findFirst({ where: { organizationId: implementation.organizationId, userId: actor.id, status: 'ACTIVE' } });
-    if (!membership) throw new ForbiddenException('Você não possui acesso a esta implementação.');
+    if (!implementation)
+      throw new NotFoundException('Implementação não encontrada.');
+    if (
+      actor.globalRole === 'GLOBAL_ADMIN' ||
+      implementation.ownerId === actor.id
+    )
+      return implementation;
+    const membership = await this.prisma.membership.findFirst({
+      where: {
+        organizationId: implementation.organizationId,
+        userId: actor.id,
+        status: 'ACTIVE',
+      },
+    });
+    if (!membership)
+      throw new ForbiddenException(
+        'Você não possui acesso a esta implementação.',
+      );
     return implementation;
   }
 
-  async synchronizeVersionStructure(versionId: string, definition: TemplateDefinition) {
-    const desiredPhaseCodes = new Set((definition.phases ?? []).map((phase) => phase.code));
-    const desiredQuestionCodes = new Set((definition.phases ?? []).flatMap((phase) => phase.questions.map((question) => question.code)));
-    const existingQuestions = await this.prisma.$queryRaw<Array<{ id: string; code: string }>>`
+  async synchronizeVersionStructure(
+    versionId: string,
+    definition: TemplateDefinition,
+  ) {
+    const desiredPhaseCodes = new Set(
+      (definition.phases ?? []).map((phase) => phase.code),
+    );
+    const desiredQuestionCodes = new Set(
+      (definition.phases ?? []).flatMap((phase) =>
+        phase.questions.map((question) => question.code),
+      ),
+    );
+    const existingQuestions = await this.prisma.$queryRaw<
+      Array<{ id: string; code: string }>
+    >`
       select id, code from implementacao.template_questions where template_version_id = ${versionId}::uuid
     `;
     for (const question of existingQuestions) {
@@ -310,7 +509,9 @@ export class ImplementationsService {
          )
          and iq.sort_order < 1000000
     `;
-    const existingPhases = await this.prisma.$queryRaw<Array<{ id: string; code: string }>>`
+    const existingPhases = await this.prisma.$queryRaw<
+      Array<{ id: string; code: string }>
+    >`
       select id, code from implementacao.template_phases where template_version_id = ${versionId}::uuid
     `;
     for (const existingPhase of existingPhases) {
@@ -346,8 +547,18 @@ export class ImplementationsService {
         returning id
       `;
       for (const [index, question] of phase.questions.entries()) {
-        const responseType = question.type === 'Número' ? 'NUMBER' : question.type === 'Texto curto' ? 'SHORT_TEXT' : 'CHECKLIST';
-        const config = JSON.stringify(question.config ?? (responseType === 'CHECKLIST' ? { options: ['Concluído', 'Em andamento', 'Não realizado'] } : {}));
+        const responseType =
+          question.type === 'Número'
+            ? 'NUMBER'
+            : question.type === 'Texto curto'
+              ? 'SHORT_TEXT'
+              : 'CHECKLIST';
+        const config = JSON.stringify(
+          question.config ??
+            (responseType === 'CHECKLIST'
+              ? { options: ['Concluído', 'Em andamento', 'Não realizado'] }
+              : {}),
+        );
         await this.prisma.$executeRaw`
           insert into implementacao.template_questions
             (template_version_id, phase_id, code, prompt, response_type, required, response_config, sort_order)

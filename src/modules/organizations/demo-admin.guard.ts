@@ -13,12 +13,17 @@ export class DemoAdminGuard implements CanActivate {
   constructor(private readonly auth: AuthService) {}
 
   async canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest<{ headers: Record<string, string | undefined> }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<{ headers: Record<string, string | undefined> }>();
     const authorization = request.headers.authorization;
-    if (!authorization?.startsWith('Bearer ')) throw new UnauthorizedException('Faça login para continuar.');
+    if (!authorization?.startsWith('Bearer '))
+      throw new UnauthorizedException('Faça login para continuar.');
     const actor = await this.auth.me(authorization.slice(7));
     if (!actor || actor.globalRole !== 'GLOBAL_ADMIN' || !actor.active) {
-      throw new ForbiddenException('Apenas administradores globais podem acessar este recurso.');
+      throw new ForbiddenException(
+        'Apenas administradores globais podem acessar este recurso.',
+      );
     }
     return true;
   }

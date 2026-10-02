@@ -1,7 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
-import { OrganizationRole } from '../../generated/prisma/client';
 import { AuthService } from '../auth/auth.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -24,7 +27,9 @@ type CreateOrganizationInput = {
   members: MemberInput[];
 };
 
-type UpdateOrganizationInput = Omit<CreateOrganizationInput, 'members'> & { members: Array<MemberInput & { id: string }> };
+type UpdateOrganizationInput = Omit<CreateOrganizationInput, 'members'> & {
+  members: Array<MemberInput & { id: string }>;
+};
 
 @Injectable()
 export class OrganizationsService {
@@ -39,7 +44,17 @@ export class OrganizationsService {
       orderBy: { tradeName: 'asc' },
       include: {
         memberships: {
-          include: { user: { select: { id: true, name: true, email: true, active: true, globalRole: true } } },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                active: true,
+                globalRole: true,
+              },
+            },
+          },
           orderBy: { createdAt: 'asc' },
         },
         implementations: { select: { id: true, status: true } },
@@ -53,7 +68,20 @@ export class OrganizationsService {
       where: { memberships: { some: { userId: actor.id, status: 'ACTIVE' } } },
       orderBy: { tradeName: 'asc' },
       include: {
-        memberships: { where: { userId: actor.id }, include: { user: { select: { id: true, name: true, email: true, active: true, globalRole: true } } } },
+        memberships: {
+          where: { userId: actor.id },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                active: true,
+                globalRole: true,
+              },
+            },
+          },
+        },
         implementations: { select: { id: true, status: true } },
       },
     });
@@ -64,7 +92,18 @@ export class OrganizationsService {
       where: { id },
       include: {
         memberships: {
-          include: { user: { select: { id: true, name: true, email: true, active: true, globalRole: true, authProviderId: true } } },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                active: true,
+                globalRole: true,
+                authProviderId: true,
+              },
+            },
+          },
           orderBy: { createdAt: 'asc' },
         },
         implementations: { select: { id: true, status: true } },
@@ -74,8 +113,11 @@ export class OrganizationsService {
 
   async getFor(id: string, actor: { id: string; globalRole: string }) {
     if (actor.globalRole === 'GLOBAL_ADMIN') return this.get(id);
-    const allowed = await this.prisma.membership.findFirst({ where: { organizationId: id, userId: actor.id, status: 'ACTIVE' } });
-    if (!allowed) throw new ForbiddenException('Você não possui acesso a esta empresa.');
+    const allowed = await this.prisma.membership.findFirst({
+      where: { organizationId: id, userId: actor.id, status: 'ACTIVE' },
+    });
+    if (!allowed)
+      throw new ForbiddenException('Você não possui acesso a esta empresa.');
     return this.get(id);
   }
 
@@ -83,49 +125,96 @@ export class OrganizationsService {
     await this.prisma.organization.update({
       where: { id },
       data: {
-        legalName: input.legalName.trim(), tradeName: input.tradeName.trim(),
-        document: input.document?.trim() || null, segment: input.segment?.trim() || null,
-        contactEmail: input.contactEmail?.trim().toLowerCase() || null, phone: input.phone?.trim() || null,
-        city: input.city?.trim() || null, state: input.state?.trim().toUpperCase() || null,
+        legalName: input.legalName.trim(),
+        tradeName: input.tradeName.trim(),
+        document: input.document?.trim() || null,
+        segment: input.segment?.trim() || null,
+        contactEmail: input.contactEmail?.trim().toLowerCase() || null,
+        phone: input.phone?.trim() || null,
+        city: input.city?.trim() || null,
+        state: input.state?.trim().toUpperCase() || null,
       },
     });
     for (const member of input.members) {
-      const membership = await this.prisma.membership.findFirstOrThrow({ where: { id: member.id, organizationId: id }, include: { user: true } });
+      const membership = await this.prisma.membership.findFirstOrThrow({
+        where: { id: member.id, organizationId: id },
+        include: { user: true },
+      });
       const email = member.email.trim().toLowerCase();
-      await this.auth.updateInvitedUser(membership.user.authProviderId, email, member.name);
-      await this.prisma.user.update({ where: { id: membership.userId }, data: { email, name: member.name.trim() } });
-      await this.prisma.membership.update({ where: { id: membership.id }, data: { role: member.role as OrganizationRole } });
+      await this.auth.updateInvitedUser(
+        membership.user.authProviderId,
+        email,
+        member.name,
+      );
+      await this.prisma.user.update({
+        where: { id: membership.userId },
+        data: { email, name: member.name.trim() },
+      });
+      await this.prisma.membership.update({
+        where: { id: membership.id },
+        data: { role: member.role },
+      });
     }
     return this.get(id);
   }
 
   async resendInvite(organizationId: string, membershipId: string) {
-    const membership = await this.prisma.membership.findFirstOrThrow({ where: { id: membershipId, organizationId }, include: { user: true } });
-    const webOrigin = this.config.getOrThrow<string>('WEB_ORIGIN').split(',')[0].trim();
-    await this.auth.resendInvite(membership.user.email, `${webOrigin}/primeiro-acesso`);
+    const membership = await this.prisma.membership.findFirstOrThrow({
+      where: { id: membershipId, organizationId },
+      include: { user: true },
+    });
+    const webOrigin = this.config
+      .getOrThrow<string>('WEB_ORIGIN')
+      .split(',')[0]
+      .trim();
+    await this.auth.resendInvite(
+      membership.user.email,
+      `${webOrigin}/primeiro-acesso`,
+    );
     return { message: 'Convite reenviado.', email: membership.user.email };
   }
 
   async generateFirstAccessLink(organizationId: string, membershipId: string) {
-    const membership = await this.prisma.membership.findFirstOrThrow({ where: { id: membershipId, organizationId }, include: { user: true } });
-    const webOrigin = this.config.getOrThrow<string>('WEB_ORIGIN').split(',')[0].trim();
-    const link = await this.auth.generateFirstAccessLink(membership.user.email, `${webOrigin}/primeiro-acesso`);
+    const membership = await this.prisma.membership.findFirstOrThrow({
+      where: { id: membershipId, organizationId },
+      include: { user: true },
+    });
+    const webOrigin = this.config
+      .getOrThrow<string>('WEB_ORIGIN')
+      .split(',')[0]
+      .trim();
+    const link = await this.auth.generateFirstAccessLink(
+      membership.user.email,
+      `${webOrigin}/primeiro-acesso`,
+    );
     return { link, email: membership.user.email };
   }
 
   async generateTemporaryAccess(organizationId: string, membershipId: string) {
-    const membership = await this.prisma.membership.findFirstOrThrow({ where: { id: membershipId, organizationId }, include: { user: true } });
+    const membership = await this.prisma.membership.findFirstOrThrow({
+      where: { id: membershipId, organizationId },
+      include: { user: true },
+    });
     const temporaryPassword = `${randomBytes(9).toString('base64url')}Aa1!`;
-    await this.auth.setTemporaryPassword(membership.user.authProviderId, temporaryPassword);
+    await this.auth.setTemporaryPassword(
+      membership.user.authProviderId,
+      temporaryPassword,
+    );
     return { email: membership.user.email, temporaryPassword };
   }
 
   async create(input: CreateOrganizationInput) {
-    const members = input.members.filter((member) => member.name.trim() && member.email.trim());
+    const members = input.members.filter(
+      (member) => member.name.trim() && member.email.trim(),
+    );
     const requiredRoles = ['OWNER', 'SUPERVISOR', 'IMPLEMENTATION_RESPONSIBLE'];
-    const missing = requiredRoles.filter((role) => !members.some((member) => member.role === role));
+    const missing = requiredRoles.filter(
+      (role) => !members.some((member) => member.role === role),
+    );
     if (missing.length) {
-      throw new BadRequestException(`Cargos obrigatórios ausentes: ${missing.join(', ')}`);
+      throw new BadRequestException(
+        `Cargos obrigatórios ausentes: ${missing.join(', ')}`,
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -154,14 +243,23 @@ export class OrganizationsService {
             globalRole: 'USER',
           },
         });
-        const webOrigin = this.config.getOrThrow<string>('WEB_ORIGIN').split(',')[0].trim();
-        const authUser = await this.auth.invite(email, `${webOrigin}/primeiro-acesso`);
-        await tx.user.update({ where: { id: user.id }, data: { authProviderId: authUser.id } });
+        const webOrigin = this.config
+          .getOrThrow<string>('WEB_ORIGIN')
+          .split(',')[0]
+          .trim();
+        const authUser = await this.auth.invite(
+          email,
+          `${webOrigin}/primeiro-acesso`,
+        );
+        await tx.user.update({
+          where: { id: user.id },
+          data: { authProviderId: authUser.id },
+        });
         await tx.membership.create({
           data: {
             organizationId: organization.id,
             userId: user.id,
-            role: member.role as OrganizationRole,
+            role: member.role,
             status: 'INVITED',
           },
         });
@@ -171,7 +269,17 @@ export class OrganizationsService {
         where: { id: organization.id },
         include: {
           memberships: {
-            include: { user: { select: { id: true, name: true, email: true, active: true, globalRole: true } } },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  active: true,
+                  globalRole: true,
+                },
+              },
+            },
           },
         },
       });

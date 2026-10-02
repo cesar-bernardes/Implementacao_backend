@@ -10,8 +10,14 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string) {
-    const auth = await this.supabase.signIn(email.trim().toLowerCase(), password);
-    const user = await this.activateUser(auth.user.id, auth.user.email ?? email);
+    const auth = await this.supabase.signIn(
+      email.trim().toLowerCase(),
+      password,
+    );
+    const user = await this.activateUser(
+      auth.user.id,
+      auth.user.email ?? email,
+    );
     return this.sessionResponse(auth.session, user);
   }
 
@@ -19,6 +25,12 @@ export class AuthService {
     const auth = await this.supabase.refresh(refreshToken);
     const user = await this.activateUser(auth.user.id, auth.user.email ?? '');
     return this.sessionResponse(auth.session, user);
+  }
+
+  async logout(accessToken: string) {
+    if (!accessToken) throw new UnauthorizedException('Sessão inválida.');
+    await this.supabase.signOut(accessToken);
+    return { message: 'Sessão encerrada.' };
   }
 
   async me(accessToken: string) {
@@ -34,12 +46,22 @@ export class AuthService {
     // A troca de senha não cria uma nova sessão no navegador. Fazemos um novo
     // login para que o primeiro acesso termine já autenticado no painel.
     const auth = await this.supabase.signIn(email, password);
-    const user = await this.activateUser(auth.user.id, auth.user.email ?? email);
+    const user = await this.activateUser(
+      auth.user.id,
+      auth.user.email ?? email,
+    );
     return this.sessionResponse(auth.session, user);
   }
 
-  async definePasswordWithTemporary(email: string, temporaryPassword: string, password: string) {
-    const auth = await this.supabase.signIn(email.trim().toLowerCase(), temporaryPassword);
+  async definePasswordWithTemporary(
+    email: string,
+    temporaryPassword: string,
+    password: string,
+  ) {
+    const auth = await this.supabase.signIn(
+      email.trim().toLowerCase(),
+      temporaryPassword,
+    );
     return this.definePassword(auth.session.access_token, password);
   }
 
@@ -50,24 +72,37 @@ export class AuthService {
       include: { memberships: true },
     });
     if (!user || !user.active) return { status: 'UNKNOWN' as const };
-    const globalInvitation = user.globalRole !== 'USER'
-      ? await this.supabase.invitationStatus(normalizedEmail)
-      : null;
-    const firstAccess = user.memberships.some((membership) => membership.status === 'INVITED')
-      || Boolean(globalInvitation?.awaitingFirstAccess);
-    return { status: firstAccess ? 'FIRST_ACCESS' as const : 'ACTIVE' as const };
+    const globalInvitation =
+      user.globalRole !== 'USER'
+        ? await this.supabase.invitationStatus(normalizedEmail)
+        : null;
+    const firstAccess =
+      user.memberships.some((membership) => membership.status === 'INVITED') ||
+      Boolean(globalInvitation?.awaitingFirstAccess);
+    return {
+      status: firstAccess ? ('FIRST_ACCESS' as const) : ('ACTIVE' as const),
+    };
   }
 
   async requestFirstAccess(email: string, redirectTo: string) {
     const normalizedEmail = email.trim().toLowerCase();
-    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail }, include: { memberships: true } });
-    const globalInvitation = user?.globalRole !== 'USER'
-      ? await this.supabase.invitationStatus(normalizedEmail)
-      : null;
-    const awaitingFirstAccess = Boolean(user?.memberships.some((membership) => membership.status === 'INVITED'))
-      || Boolean(globalInvitation?.awaitingFirstAccess);
+    const user = await this.prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      include: { memberships: true },
+    });
+    const globalInvitation =
+      user?.globalRole !== 'USER'
+        ? await this.supabase.invitationStatus(normalizedEmail)
+        : null;
+    const awaitingFirstAccess =
+      Boolean(
+        user?.memberships.some((membership) => membership.status === 'INVITED'),
+      ) || Boolean(globalInvitation?.awaitingFirstAccess);
     if (!user || !awaitingFirstAccess) {
-      return { message: 'Se o usuário estiver aguardando ativação, um novo acesso será enviado.' };
+      return {
+        message:
+          'Se o usuário estiver aguardando ativação, um novo acesso será enviado.',
+      };
     }
     await this.supabase.resendInvite(normalizedEmail, redirectTo);
     return { message: 'Enviamos a confirmação para o e-mail cadastrado.' };
@@ -82,7 +117,11 @@ export class AuthService {
   }
 
   async updateInvitedUser(authProviderId: string, email: string, name: string) {
-    return this.supabase.updateUser(authProviderId, email.trim().toLowerCase(), name.trim());
+    return this.supabase.updateUser(
+      authProviderId,
+      email.trim().toLowerCase(),
+      name.trim(),
+    );
   }
 
   async resendInvite(email: string, redirectTo: string) {
@@ -90,7 +129,10 @@ export class AuthService {
   }
 
   async generateFirstAccessLink(email: string, redirectTo: string) {
-    return this.supabase.generateFirstAccessLink(email.trim().toLowerCase(), redirectTo);
+    return this.supabase.generateFirstAccessLink(
+      email.trim().toLowerCase(),
+      redirectTo,
+    );
   }
 
   async setTemporaryPassword(authProviderId: string, password: string) {
@@ -102,18 +144,36 @@ export class AuthService {
     const existing = await this.prisma.user.findFirst({
       where: { OR: [{ authProviderId }, { email: normalizedEmail }] },
     });
-    if (!existing || !existing.active) throw new UnauthorizedException('Usuário sem acesso ao sistema.');
+    if (!existing || !existing.active)
+      throw new UnauthorizedException('Usuário sem acesso ao sistema.');
     return this.prisma.user.update({
       where: { id: existing.id },
       data: {
         authProviderId,
-        memberships: { updateMany: { where: { status: 'INVITED' }, data: { status: 'ACTIVE' } } },
+        memberships: {
+          updateMany: {
+            where: { status: 'INVITED' },
+            data: { status: 'ACTIVE' },
+          },
+        },
       },
       include: { memberships: { include: { organization: true } } },
     });
   }
 
-  private sessionResponse(session: { access_token: string; refresh_token: string; expires_at?: number }, user: Awaited<ReturnType<AuthService['activateUser']>>) {
-    return { accessToken: session.access_token, refreshToken: session.refresh_token, expiresAt: session.expires_at, user };
+  private sessionResponse(
+    session: {
+      access_token: string;
+      refresh_token: string;
+      expires_at?: number;
+    },
+    user: Awaited<ReturnType<AuthService['activateUser']>>,
+  ) {
+    return {
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+      expiresAt: session.expires_at,
+      user,
+    };
   }
 }

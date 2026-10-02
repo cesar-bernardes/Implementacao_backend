@@ -1,6 +1,25 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { IsArray, IsDateString, IsIn, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import type { Request } from 'express';
 import { AuthenticatedGuard } from '../auth/authenticated.guard';
 import { DemoAdminGuard } from '../organizations/demo-admin.guard';
@@ -17,13 +36,17 @@ class CreateImplementationDto {
 }
 
 class SaveAnswerDto {
-  @IsOptional() @IsIn(['COMPLETED', 'IN_PROGRESS', 'NOT_DONE']) checklistValue?: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_DONE';
+  @IsOptional()
+  @IsIn(['COMPLETED', 'IN_PROGRESS', 'NOT_DONE'])
+  checklistValue?: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_DONE';
   @IsOptional() @IsNumber() numberValue?: number;
   @IsOptional() @IsString() @MaxLength(100) textValue?: string;
   @IsOptional() @IsString() notes?: string;
 }
 
-type AuthenticatedRequest = Request & { actor: { id: string; globalRole: string } };
+type AuthenticatedRequest = Request & {
+  actor: { id: string; globalRole: string };
+};
 
 @ApiTags('implementations')
 @ApiBearerAuth()
