@@ -1,11 +1,17 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { IsArray } from 'class-validator';
+import { IsArray, IsOptional, IsString, MinLength } from 'class-validator';
 import { DemoAdminGuard } from '../organizations/demo-admin.guard';
 import { ProductsService } from './products.service';
 
 class ProductDefinitionDto {
   @IsArray() phases!: Array<Record<string, unknown>>;
+}
+
+class CreateProductDto {
+  @IsString() @MinLength(2) name!: string;
+  @IsOptional() @IsString() @MinLength(2) templateName?: string;
+  @IsOptional() @IsString() @MinLength(2) initialPhaseName?: string;
 }
 
 @ApiTags('products')
@@ -17,6 +23,9 @@ export class ProductsController {
 
   @Get('configuration')
   configuration() { return this.products.configuration(); }
+
+  @Post()
+  create(@Body() body: CreateProductDto) { return this.products.create(body); }
 
   @Patch('template-versions/:versionId/configuration')
   update(@Param('versionId') versionId: string, @Body() body: ProductDefinitionDto) {

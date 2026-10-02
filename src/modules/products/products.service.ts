@@ -21,6 +21,7 @@ type ProductPhase = {
 };
 
 type ProductDefinition = { phases: ProductPhase[] };
+type CreateProductInput = { name: string; templateName?: string; initialPhaseName?: string };
 
 @Injectable()
 export class ProductsService {
@@ -51,6 +52,58 @@ export class ProductsService {
         },
       },
     });
+  }
+
+  async create(input: CreateProductInput) {
+    const name = input.name.trim();
+    const templateName = input.templateName?.trim() || 'Implantação padrão';
+    const initialPhaseName = input.initialPhaseName?.trim() || 'Configuração inicial';
+    if (!name) throw new BadRequestException('Informe o nome do produto.');
+
+    const duplicate = await this.prisma.product.findFirst({
+      where: { OR: [{ name: { equals: name, mode: 'insensitive' } }, { slug: this.slugify(name) }] },
+    });
+    if (duplicate) throw new BadRequestException('Já existe um produto com este nome.');
+
+    const definition: ProductDefinition = {
+      phases: [{
+        code: 'F01', name: initialPhaseName, order: 1, isBase: true,
+        durationWeeks: 1, meetingsPerWeek: 1, questions: [],
+      }],
+    };
+    const product = await this.prisma.product.create({
+      data: {
+        name,
+        slug: this.slugify(name),
+        templates: {
+          create: {
+            name: templateName,
+            versions: {
+              create: {
+                version: 1,
+                status: 'PUBLISHED',
+                definition: definition as never,
+                publishedAt: new Date(),
+              },
+            },
+          },
+        },
+      },
+      select: {
+        id: true, name: true, slug: true,
+        templates: { select: { id: true, name: true, versions: { select: { id: true, version: true, definition: true, publishedAt: true } } } },
+      },
+    });
+    const versionId = product.templates[0]?.versions[0]?.id;
+    if (versionId) await this.implementations.synchronizeVersionStructure(versionId, definition as TemplateDefinition);
+    return product;
+  }
+
+  private slugify(value: string) {
+    const slug = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!slug) throw new BadRequestException('O nome do produto precisa conter letras ou números.');
+    return slug;
   }
 
   async updateConfiguration(versionId: string, definition: ProductDefinition) {
