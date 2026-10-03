@@ -112,6 +112,18 @@ export class AuthService {
     return this.supabase.invite(email.trim().toLowerCase(), redirectTo);
   }
 
+  async createConfirmedUser(email: string, password: string, name: string) {
+    return this.supabase.createConfirmedUser(
+      email.trim().toLowerCase(),
+      password,
+      name.trim(),
+    );
+  }
+
+  async deleteUser(authProviderId: string) {
+    return this.supabase.deleteUser(authProviderId);
+  }
+
   invitationStatus(email: string) {
     return this.supabase.invitationStatus(email.trim().toLowerCase());
   }

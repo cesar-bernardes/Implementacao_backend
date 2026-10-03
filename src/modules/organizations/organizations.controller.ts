@@ -24,12 +24,17 @@ import { OrganizationsService } from './organizations.service';
 import { AuthenticatedGuard } from '../auth/authenticated.guard';
 import type { Request } from 'express';
 
-class MemberDto {
+class BaseMemberDto {
   @IsString() @MinLength(2) name!: string;
   @IsEmail() email!: string;
   @IsOptional() @IsString() phone?: string;
   @IsIn(['OWNER', 'SUPERVISOR', 'IMPLEMENTATION_RESPONSIBLE']) role!:
     'OWNER' | 'SUPERVISOR' | 'IMPLEMENTATION_RESPONSIBLE';
+}
+
+class MemberDto extends BaseMemberDto {
+  @IsString() @MinLength(8) password!: string;
+  @IsString() @MinLength(8) passwordConfirmation!: string;
 }
 
 class CreateOrganizationDto {
@@ -47,7 +52,7 @@ class CreateOrganizationDto {
   members!: MemberDto[];
 }
 
-class UpdateMemberDto extends MemberDto {
+class UpdateMemberDto extends BaseMemberDto {
   @IsString() id!: string;
 }
 class UpdateOrganizationDto {

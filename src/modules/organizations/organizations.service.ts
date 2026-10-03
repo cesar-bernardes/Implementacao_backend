@@ -3,7 +3,7 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { ConfigService } from '@nestjs/config';
@@ -12,6 +12,8 @@ type MemberInput = {
   name: string;
   email: string;
   phone?: string;
+  password: string;
+  passwordConfirmation: string;
   role: 'OWNER' | 'SUPERVISOR' | 'IMPLEMENTATION_RESPONSIBLE';
 };
 
@@ -28,7 +30,9 @@ type CreateOrganizationInput = {
 };
 
 type UpdateOrganizationInput = Omit<CreateOrganizationInput, 'members'> & {
-  members: Array<MemberInput & { id: string }>;
+  members: Array<
+    Omit<MemberInput, 'password' | 'passwordConfirmation'> & { id: string }
+  >;
 };
 
 @Injectable()
@@ -217,72 +221,130 @@ export class OrganizationsService {
       );
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const organization = await tx.organization.create({
-        data: {
-          legalName: input.legalName.trim(),
-          tradeName: input.tradeName.trim(),
-          document: input.document?.trim() || undefined,
-          segment: input.segment?.trim() || undefined,
-          contactEmail: input.contactEmail?.trim().toLowerCase() || undefined,
-          phone: input.phone?.trim() || undefined,
-          city: input.city?.trim() || undefined,
-          state: input.state?.trim().toUpperCase() || undefined,
-        },
-      });
+    const normalizedEmails = members.map((member) =>
+      member.email.trim().toLowerCase(),
+    );
+    if (new Set(normalizedEmails).size !== normalizedEmails.length) {
+      throw new BadRequestException(
+        'Cada colaborador deve possuir um e-mail diferente.',
+      );
+    }
+    const invalidPassword = members.find(
+      (member) =>
+        member.password.length < 8 ||
+        member.password !== member.passwordConfirmation,
+    );
+    if (invalidPassword) {
+      throw new BadRequestException(
+        `A senha e a confirmação de ${invalidPassword.name} devem ser iguais e possuir ao menos 8 caracteres.`,
+      );
+    }
 
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: { in: normalizedEmails } },
+      select: { email: true },
+    });
+    if (existingUser) {
+      throw new BadRequestException(
+        `O e-mail ${existingUser.email} já está cadastrado no sistema.`,
+      );
+    }
+    for (const email of normalizedEmails) {
+      const authStatus = await this.auth.invitationStatus(email);
+      if (authStatus.exists) {
+        throw new BadRequestException(
+          `O e-mail ${email} já possui uma conta de acesso. Use outro e-mail ou remova a conta antiga no Supabase.`,
+        );
+      }
+    }
+
+    const document = input.document?.trim() || undefined;
+    if (
+      document &&
+      (await this.prisma.organization.findUnique({ where: { document } }))
+    ) {
+      throw new BadRequestException('Já existe uma empresa com este CNPJ.');
+    }
+
+    const createdAuthUserIds: string[] = [];
+
+    try {
+      const preparedMembers: Array<
+        MemberInput & { email: string; authProviderId: string }
+      > = [];
       for (const member of members) {
         const email = member.email.trim().toLowerCase();
-        const user = await tx.user.upsert({
-          where: { email },
-          update: { name: member.name.trim(), active: true },
-          create: {
-            authProviderId: `pending-${randomUUID()}`,
-            email,
-            name: member.name.trim(),
-            globalRole: 'USER',
-          },
-        });
-        const webOrigin = this.config
-          .getOrThrow<string>('WEB_ORIGIN')
-          .split(',')[0]
-          .trim();
-        const authUser = await this.auth.invite(
+        const authUser = await this.auth.createConfirmedUser(
           email,
-          `${webOrigin}/primeiro-acesso`,
+          member.password,
+          member.name,
         );
-        await tx.user.update({
-          where: { id: user.id },
-          data: { authProviderId: authUser.id },
-        });
-        await tx.membership.create({
-          data: {
-            organizationId: organization.id,
-            userId: user.id,
-            role: member.role,
-            status: 'INVITED',
-          },
-        });
+        createdAuthUserIds.push(authUser.id);
+        preparedMembers.push({ ...member, email, authProviderId: authUser.id });
       }
 
-      return tx.organization.findUniqueOrThrow({
-        where: { id: organization.id },
-        include: {
-          memberships: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  active: true,
-                  globalRole: true,
+      return await this.prisma.$transaction(async (tx) => {
+        const organization = await tx.organization.create({
+          data: {
+            legalName: input.legalName.trim(),
+            tradeName: input.tradeName.trim(),
+            document,
+            segment: input.segment?.trim() || undefined,
+            contactEmail: input.contactEmail?.trim().toLowerCase() || undefined,
+            phone: input.phone?.trim() || undefined,
+            city: input.city?.trim() || undefined,
+            state: input.state?.trim().toUpperCase() || undefined,
+          },
+        });
+
+        for (const member of preparedMembers) {
+          const user = await tx.user.create({
+            data: {
+              authProviderId: member.authProviderId,
+              email: member.email,
+              name: member.name.trim(),
+              globalRole: 'USER',
+            },
+          });
+          await tx.membership.create({
+            data: {
+              organizationId: organization.id,
+              userId: user.id,
+              role: member.role,
+              status: 'ACTIVE',
+            },
+          });
+        }
+
+        return tx.organization.findUniqueOrThrow({
+          where: { id: organization.id },
+          include: {
+            memberships: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    active: true,
+                    globalRole: true,
+                  },
                 },
               },
             },
           },
-        },
+        });
       });
-    });
+    } catch (error) {
+      await Promise.allSettled(
+        createdAuthUserIds.map((userId) => this.auth.deleteUser(userId)),
+      );
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        error instanceof Error
+          ? `Não foi possível cadastrar a empresa: ${error.message}`
+          : 'Não foi possível cadastrar a empresa.',
+      );
+    }
   }
 }

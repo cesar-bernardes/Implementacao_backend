@@ -159,6 +159,11 @@ export class SupabaseAuthService {
     return data.user;
   }
 
+  async deleteUser(userId: string) {
+    const { error } = await this.client.auth.admin.deleteUser(userId);
+    if (error) throw error;
+  }
+
   async definePassword(accessToken: string, password: string) {
     const response = await fetch(`${this.url}/auth/v1/user`, {
       method: 'PUT',
